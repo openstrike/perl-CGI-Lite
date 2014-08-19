@@ -1,0 +1,25 @@
+CGI::Lite v2.04
+----------------
+
+Released: 4th Jul 2014
+
+
+DESCRIPTION
+-----------
+
+You can use this module to decode form and query information, including file
+uploads, as well as cookies in a very simple manner; you need not concern
+yourself with the actual details behind the decoding process.
+
+
+NEW IN THIS VERSION
+-------------------
+
+Only documentation changes since 2.03_02.
+
+The uploads have had a bug fix since 2.03 which should allow successful
+binary uploads for MS Windows servers.
+
+See the CHANGES file for full history.
+
+$Id: README,v 1.5 2014/07/04 11:23:37 pete Exp $
