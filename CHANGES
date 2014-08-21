@@ -1,3 +1,11 @@
+* v3.00
+
+Full test coverage (IN PROGRESS)
+
+BUG FIX: $cgi->set_platform ('macintosh') erroneously set platform to
+    'PC' because the regex was not anchored to the start. 'macintosh'
+    now results in platform 'Mac' as it should.
+
 * v2.04
 
 Minor documentation fixes and explanation of the proposed split into

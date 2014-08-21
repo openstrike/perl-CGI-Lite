@@ -603,10 +603,10 @@ sub set_platform
 {
     my ($self, $platform) = @_;
 
-    if ($platform =~ /(?:PC|NT|Windows(?:95)?|DOS)/i) {
+    if ($platform =~ /^(?:PC|NT|Windows(?:95)?|DOS)/i) {
         $self->{platform} = 'PC';
 
-    } elsif ($platform =~ /Mac(?:intosh)?/i) {
+    } elsif ($platform =~ /^Mac(?:intosh)?/i) {
 
 	## Should I check for NeXT here :-)
 
