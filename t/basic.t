@@ -10,18 +10,17 @@
 #        NOTES:  ---
 #       AUTHOR:  Pete Houston (cpan@openstrike.co.uk)
 #      COMPANY:  Openstrike
-#      VERSION:  $Id: basic.t,v 1.4 2014/07/04 11:26:03 pete Exp $
 #      CREATED:  13/05/14 21:36:53
-#     REVISION:  $Revision: 1.4 $
 #
 #  Updates:
 #    21/08/2014 Now tests set_platform, wrap_textarea and get_error_message.
+#    25/08/2014 Now tests get_multiple values.
 #===============================================================================
 
 use strict;
 use warnings;
 
-use Test::More tests => 302;                      # last test to print
+use Test::More tests => 306;                      # last test to print
 
 use lib './lib';
 
@@ -83,3 +82,13 @@ is ($cgi->wrap_textarea ($longstr, 5), "123\r456\r789\r0123456\r7 89\r0",
 
 is ($cgi->is_error(), 0, 'No errors');
 is ($cgi->get_error_message, undef, 'No error message');
+
+is ($cgi->get_multiple_values (), undef,
+	'get_multiple_values (no argument)');
+is ($cgi->get_multiple_values ('foo'), 'foo',
+	'get_multiple_values (scalar argument)');
+is ($cgi->get_multiple_values ('foo', 'bar'), 'foo',
+	'get_multiple_values (array argument)');
+my $foobar = ['foo', 'bar'];
+my @res = $cgi->get_multiple_values ($foobar);
+is_deeply (\@res, $foobar, 'get_multiple_values (array ref argument)');
