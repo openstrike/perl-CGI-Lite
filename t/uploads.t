@@ -18,7 +18,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11;                      # last test to print
+use Test::More tests => 15;                      # last test to print
 
 use lib './lib';
 
@@ -59,6 +59,24 @@ for my $i (0..2) {
 	is ((stat($file))[7], $sizes[$i], "File size check ($i)") or
 		warn_tail ($file);
 }
+
+is ($cgi->set_directory ('/srhslgvsgnlsenhglsgslvngh'), 0,
+	'Set directory (non-existant)');
+my $testdir = 'testperms';
+mkdir $testdir, 0400;
+SKIP: {
+	skip "subdir '$testdir' could not be created", 3 unless (-d $testdir);
+
+	is ($cgi->set_directory ($testdir), 0, 'Set directory (unwriteable)');
+	chmod 0200, $testdir;
+	is ($cgi->set_directory ($testdir), 0, 'Set directory (unreadable)');
+	rmdir $testdir and open my $td, '>', $testdir;
+	print $td "Test\n";
+	close $td;
+	is ($cgi->set_directory ($testdir), 0, 'Set directory (non-directory)');
+	unlink $testdir;
+}
+
 
 
 
