@@ -10,15 +10,16 @@
 #        NOTES:  ---
 #       AUTHOR:  Pete Houston (cpan@openstrike.co.uk)
 #      COMPANY:  Openstrike
-#      VERSION:  $Id: cookie.t,v 1.1 2014/05/26 15:40:15 pete Exp $
 #      CREATED:  20/05/14 16:12:33
-#     REVISION:  $Revision: 1.1 $
+#
+#  Updates:
+#    25/08/2014 Now tests get_ordered_keys and print_data.
 #===============================================================================
 
 use strict;
 use warnings;
 
-use Test::More tests => 231;                      # last test to print
+use Test::More tests => 235;                      # last test to print
 
 use lib './lib';
 
@@ -83,6 +84,27 @@ ok (exists $cookies->{' foo '}, "First cookie name ($testname)");
 is ($cookies->{' foo '}, ' bar ', "First cookie value ($testname)");
 ok (exists $cookies->{'b a z'}, "Second cookie name ($testname)");
 is ($cookies->{'b a z'}, 'qu ux', "Second cookie value ($testname)");
+
+my $ref = [];
+$ref = $cgi->get_ordered_keys;
+is_deeply ($ref, [' foo ', 'b a z'], 
+	'get_ordered_keys arrayref for cookie data');
+my @ref = $cgi->get_ordered_keys;
+is_deeply (\@ref, [' foo ', 'b a z'], 
+	'get_ordered_keys array for cookie data');
+
+SKIP: {
+	skip "No file created for stdout", 2 unless open my $tmp, '>', 'tmpout';
+	select $tmp;
+	$cgi->print_data;
+	close $tmp;
+	open $tmp, '<', 'tmpout';
+	chomp (my $printed = <$tmp>);
+	is ($printed, q# foo  =  bar #, 'print_data first cookie');
+	chomp (my $printed = <$tmp>);
+	is ($printed, q#b a z = qu ux#, 'print_data second cookie');
+	close $tmp and unlink 'tmpout';
+}
 
 # Other url-escaped chars here
 
