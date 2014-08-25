@@ -10,15 +10,16 @@
 #        NOTES:  ---
 #       AUTHOR:  Pete Houston (cpan@openstrike.co.uk)
 #      COMPANY:  Openstrike
-#      VERSION:  $Id: forms.t,v 1.1 2014/05/26 15:40:05 pete Exp $
 #      CREATED:  14/05/14 12:27:26
-#     REVISION:  $Revision: 1.1 $
+#
+#  Updates:
+#    25/08/2014 Now tests get_ordered_keys and print_data.
 #===============================================================================
 
 use strict;
 use warnings;
 
-use Test::More tests => 22;                      # last test to print
+use Test::More tests => 27;                      # last test to print
 
 use lib './lib';
 
@@ -89,6 +90,29 @@ is ($cgi->is_error, 0, 'Content type x-www-form-urlencoded and charset with POST
 is ($form->{bar}, 'quux', 'Scalar param with POST as x-www-form-urlencoded');
 is (ref $form->{foo}, 'ARRAY', 'Parsing array param with POST as x-www-form-urlencoded');
 is ($form->{foo}->[1], 'baz', 'Extracting array param value with POST as x-www-form-urlencoded');
+
+my $ref = [];
+$ref = $cgi->get_ordered_keys;
+is_deeply ($ref, ['foo', 'bar', 'notused'], 
+	'get_ordered_keys arrayref for form data');
+my @ref = $cgi->get_ordered_keys;
+is_deeply (\@ref, ['foo', 'bar', 'notused'], 
+	'get_ordered_keys array for form data');
+
+SKIP: {
+	skip "No file created for stdout", 3 unless open my $tmp, '>', 'tmpout';
+	select $tmp;
+	$cgi->print_data;
+	close $tmp;
+	open $tmp, '<', 'tmpout';
+	chomp (my $printed = <$tmp>);
+	is ($printed, q#foo = bar baz#, 'print_data double value');
+	chomp (my $printed = <$tmp>);
+	is ($printed, q#bar = quux#, 'print_data single value');
+	chomp (my $printed = <$tmp>);
+	is ($printed, q#notused = #, 'print_data no value');
+	close $tmp and unlink 'tmpout';
+}
 
 sub post_data {
 	my $datafile = shift;
