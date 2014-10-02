@@ -107,9 +107,9 @@ SKIP: {
 	open $tmp, '<', 'tmpout';
 	chomp (my $printed = <$tmp>);
 	is ($printed, q#foo = bar baz#, 'print_data double value');
-	chomp (my $printed = <$tmp>);
+	chomp ($printed = <$tmp>);
 	is ($printed, q#bar = quux#, 'print_data single value');
-	chomp (my $printed = <$tmp>);
+	chomp ($printed = <$tmp>);
 	is ($printed, q#notused = #, 'print_data no value');
 	close $tmp and unlink 'tmpout';
 }

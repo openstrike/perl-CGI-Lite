@@ -101,7 +101,7 @@ SKIP: {
 	open $tmp, '<', 'tmpout';
 	chomp (my $printed = <$tmp>);
 	is ($printed, q# foo  =  bar #, 'print_data first cookie');
-	chomp (my $printed = <$tmp>);
+	chomp ($printed = <$tmp>);
 	is ($printed, q#b a z = qu ux#, 'print_data second cookie');
 	close $tmp and unlink 'tmpout';
 }
