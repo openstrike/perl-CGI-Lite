@@ -10,6 +10,11 @@ Decide whether to tighten validation of cookie names.
 Decide on the appropriate action to take when presented with multiple
 cookies with the same name and document it.
 
+Write tests for:
+	EOL processing for the different mime types
+	Fix the upload bug (RT 99294)
+	create_variables (no, just deprecate this one)
+
 Pete
 
 Below is Smyler's todo list from 2003.
