@@ -1018,7 +1018,7 @@ sub _parse_multipart_data
     $code = <<'End_of_Multipart';
 
     my ($seen, $buffer_size, $byte_count, $platform, $eol, $handle, 
-	$directory, $bytes_left, $new_data, $old_data, 
+	$directory, $bytes_left, $new_data, $old_data, $this_boundary,
 	$current_buffer, $changed, $store, $disposition, $headers, 
         $mime_type, $convert, $field, $file, $new_name, $full_path);
 
@@ -1067,14 +1067,14 @@ sub _parse_multipart_data
 	##--
 
 	if ($current_buffer =~ 
-            /(.*?)(?:\015?\012)?-*$boundary-*[\015\012]*(?=(.*))/os) {
+            /(.*?)((?:\015?\012)?-*$boundary-*[\015\012]*)(?=(.*))/os) {
 
-	    ($store, $old_data) = ($1, $2);
+	    ($store, $this_boundary, $old_data) = ($1, $2, $3);
 
             if ($current_buffer =~ 
              /[Cc]ontent-[Dd]isposition: ([^\015\012]+)\015?\012  # Disposition
-              (?:([A-Za-z].*?)(?:\015?\012){2})?                  # Headers
-              (?:\015?\012)?                                      # End
+              (?:([A-Za-z].*?)(?:\015?\012))?                     # Headers
+              (?:\015?\012)                                       # End
               (?=(.*))                                            # Other Data
              /xs) {
 
@@ -1124,7 +1124,9 @@ sub _parse_multipart_data
 
                     $files->{$new_name} = $full_path;
                 } 
-            }
+            } elsif ($byte_count < $total_bytes) {
+				$old_data = $this_boundary . $old_data;
+			}
 
 	} elsif ($old_data) {
             $store    = $old_data;

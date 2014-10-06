@@ -18,7 +18,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 58;                      # last test to print
+use Test::More tests => 11254;                      # last test to print
 
 use lib './lib';
 
@@ -136,7 +136,7 @@ like ($form->{'does_not_exist_gif'}, qr/^[0-9]+__does_not_exist\.gif/, 'Second f
 like ($form->{'100;100_gif'}, qr/^100_100\.gif/, 'Third file');
 like ($form->{'300x300_gif'}, qr/^[0-9]+__300x300\.gif/, 'Fourth file');
 
-# Buffer size tests
+# Buffer size setting tests
 
 is ($cgi->set_buffer_size(1), 256, 'Buffer size too low');
 is ($cgi->set_buffer_size(1000000), $ENV{CONTENT_LENGTH}, 'Buffer size too high');
@@ -169,23 +169,29 @@ is (eof ($form->{'300x300_gif'}), 1, 'File closed');
 #	Tests required for these:
 #	check mime types are honoured on upload
 #	The text/plain should be altered, but the text/html should not.
-$datafile          = 't/mime_upload.txt';
+#	Run this with a wide window of buffer sizes to ensure there are no
+#	edge cases.
+$datafile             = 't/mime_upload.txt';
 $ENV{CONTENT_LENGTH}  = (stat ($datafile))[7];
 $cgi->add_timestamp (0);
 $cgi->set_file_type ('name');
-$cgi->set_buffer_size(1);
-($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
-is ($cgi->is_error, 0, 'Parsing data with POST');
-
-#$cgi->print_data;
 @files = qw/plain_txt html_txt plain_win_txt html_win_txt/;
 @sizes = qw/186 212 186 219/;
 @sizes = qw/191 212 191 219/ if $^O eq 'MSWin32';
-for my $i (0..3) {
-	my $file = "$uploaddir/$form->{$files[$i]}";
-	ok (-e "$file", "Uploaded file exists ($i)") or warn "Name = '$file'\n" . $cgi->get_error_message;
-	is ((stat($file))[7], $sizes[$i], "File size check ($i)") or
-		warn_tail ($file);
+for my $buf_size (256 .. 1500) {
+	$cgi->set_buffer_size($buf_size);
+	($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
+	is ($cgi->is_error, 0, "Parsing data with POST (buffer size $buf_size)");
+
+	for my $i (0..3) {
+		my $file = "$uploaddir/$form->{$files[$i]}";
+		ok (-e "$file", "Uploaded file exists ($i - buffer size $buf_size") or
+			warn "Name = '$file'\n" . $cgi->get_error_message;
+		is ((stat($file))[7], $sizes[$i],
+			"File size check ($i - buffer size $buf_size)") or
+			warn_tail ($file);
+		unlink ($file);
+	}
 }
 
 sub post_data {
