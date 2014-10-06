@@ -14,7 +14,6 @@
 #===============================================================================
 
 use strict;
-use warnings;
 
 use Test::More tests => 11254;                      # last test to print
 
@@ -36,15 +35,15 @@ $ENV{CONTENT_LENGTH}  = (stat ($datafile))[7];
 $ENV{CONTENT_TYPE}    = q#multipart/form-data; boundary=`!"$%^&*()-+[]{}'@.?~\#|aaa#;
 
 my $uploaddir = 'tmpcgilite';
-mkdir $uploaddir unless -d $uploaddir;
+mkdir ($uploaddir, 0700) unless -d $uploaddir;
 
 
 my ($cgi, $form) = post_data ($datafile, $uploaddir);
 
 is ($cgi->is_error, 0, 'Parsing data with POST');
-like ($form->{'does_not_exist_gif'}, qr/[0-9]+__does_not_exist\.gif/, 'Second file');
-like ($form->{'100;100_gif'}, qr/[0-9]+__100;100\.gif/, 'Third file');
-like ($form->{'300x300_gif'}, qr/[0-9]+__300x300\.gif/, 'Fourth file');
+like ($form->{'does_not_exist_gif'}, '/[0-9]+__does_not_exist\.gif/', 'Second file');
+like ($form->{'100;100_gif'}, '/[0-9]+__100;100\.gif/', 'Third file');
+like ($form->{'300x300_gif'}, '/[0-9]+__300x300\.gif/', 'Fourth file');
 
 # XXX Duplicate field names for files do NOT work currently. Fix this
 # and then implement some tests.
@@ -68,7 +67,7 @@ SKIP: {
 	is ($cgi->set_directory ($testdir), 0, 'Set directory (unwriteable)');
 	chmod 0200, $testdir;
 	is ($cgi->set_directory ($testdir), 0, 'Set directory (unreadable)');
-	rmdir $testdir and open my $td, '>', $testdir;
+	rmdir $testdir and open my $td, ">$testdir";
 	print $td "Test\n";
 	close $td;
 	is ($cgi->set_directory ($testdir), 0, 'Set directory (non-directory)');
@@ -104,9 +103,9 @@ $cgi->add_timestamp (0);
 is ($cgi->{timestamp}, 0, 'timestamp is zero');
 ($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
 is ($cgi->is_error, 0, 'Parsing data with POST');
-like ($form->{'does_not_exist_gif'}, qr/^does_not_exist\.gif/, 'Second file');
-like ($form->{'100;100_gif'}, qr/^100;100\.gif/, 'Third file');
-like ($form->{'300x300_gif'}, qr/^300x300\.gif/, 'Fourth file');
+like ($form->{'does_not_exist_gif'}, '/^does_not_exist\.gif/', 'Second file');
+like ($form->{'100;100_gif'}, '/^100;100\.gif/', 'Third file');
+like ($form->{'300x300_gif'}, '/^300x300\.gif/', 'Fourth file');
 
 unlink ("$uploaddir/300x300.gif");
 
@@ -114,9 +113,9 @@ $cgi->add_timestamp (2);
 is ($cgi->{timestamp}, 2, 'timestamp is 2');
 ($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
 is ($cgi->is_error, 0, 'Parsing data with POST');
-like ($form->{'does_not_exist_gif'}, qr/[0-9]+__does_not_exist\.gif/, 'Second file');
-like ($form->{'100;100_gif'}, qr/[0-9]+__100;100\.gif/, 'Third file');
-like ($form->{'300x300_gif'}, qr/^300x300\.gif/, 'Fourth file');
+like ($form->{'does_not_exist_gif'}, '/[0-9]+__does_not_exist\.gif/', 'Second file');
+like ($form->{'100;100_gif'}, '/[0-9]+__100;100\.gif/', 'Third file');
+like ($form->{'300x300_gif'}, '/^300x300\.gif/', 'Fourth file');
 
 sub cleanfile {
 	my $name = shift;
@@ -130,9 +129,9 @@ $cgi->filter_filename (\&cleanfile);
 ok (defined $cgi->{filter}, 'Filename filter set');
 ($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
 is ($cgi->is_error, 0, 'Parsing data with POST');
-like ($form->{'does_not_exist_gif'}, qr/^[0-9]+__does_not_exist\.gif/, 'Second file');
-like ($form->{'100;100_gif'}, qr/^100_100\.gif/, 'Third file');
-like ($form->{'300x300_gif'}, qr/^[0-9]+__300x300\.gif/, 'Fourth file');
+like ($form->{'does_not_exist_gif'}, '/^[0-9]+__does_not_exist\.gif/', 'Second file');
+like ($form->{'100;100_gif'}, '/^100_100\.gif/', 'Third file');
+like ($form->{'300x300_gif'}, '/^[0-9]+__300x300\.gif/', 'Fourth file');
 
 # Buffer size setting tests
 
@@ -149,9 +148,9 @@ is ($cgi->{file_type}, 'handle', 'File type set to handle');
 
 ($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
 is ($cgi->is_error, 0, 'Parsing data with POST');
-like ($form->{'does_not_exist_gif'}, qr/^[0-9]+__does_not_exist\.gif/, 'Second file');
-like ($form->{'100;100_gif'}, qr/^100_100\.gif/, 'Third file');
-like ($form->{'300x300_gif'}, qr/^[0-9]+__300x300\.gif/, 'Fourth file');
+like ($form->{'does_not_exist_gif'}, '/^[0-9]+__does_not_exist\.gif/', 'Second file');
+like ($form->{'100;100_gif'}, '/^100_100\.gif/', 'Third file');
+like ($form->{'300x300_gif'}, '/^[0-9]+__300x300\.gif/', 'Fourth file');
 # Check the handles
 my $imgdata = '';
 my $handle = $form->{'100;100_gif'};
@@ -195,7 +194,7 @@ for my $buf_size (256 .. 1500) {
 sub post_data {
 	my ($datafile, $dir, $cgi) = @_;
 	local *STDIN;
-	open STDIN, '<', $datafile
+	open STDIN, "<$datafile"
 		or die "Cannot open test file $datafile: $!";
 	binmode STDIN;
 	$cgi ||= CGI::Lite->new;
@@ -211,7 +210,7 @@ sub warn_tail {
 	# the file here. Ideally this should never be called.
 	my $file = shift;
 	my $n    = 32;
-	open (my $in, '<', $file) or return warn "Cannot open $file for reading.  $!";
+	open (my $in, "<$file") or return warn "Cannot open $file for reading.  $!";
 	binmode $in;
 	local $/ = undef;
 	my $contents = <$in>;

@@ -18,7 +18,6 @@
 #===============================================================================
 
 use strict;
-use warnings;
 
 use Test::More tests => 306;                      # last test to print
 
@@ -26,7 +25,7 @@ use lib './lib';
 
 BEGIN { use_ok ('CGI::Lite') }
 
-is ($CGI::Lite::VERSION, '2.04', 'Version test');
+is ($CGI::Lite::VERSION, '2.04_01', 'Version test');
 is (CGI::Lite::Version (), $CGI::Lite::VERSION, 'Version subroutine test');
 
 my $cgi = CGI::Lite->new ();
@@ -36,7 +35,6 @@ is (ref $cgi, 'CGI::Lite', 'New');
 is (browser_escape ('<&>'), '&#60;&#38;&#62;', 'browser_escape');
 
 {
-	no warnings 'qw';
 	my @from = qw/! " # $ % ^ & * ( ) _ + - =/;
 	my @to   = qw/%21 %22 %23 %24 %25 %5E %26 %2A %28 %29 _ %2B - %3D/;
 

@@ -17,7 +17,6 @@
 #===============================================================================
 
 use strict;
-use warnings;
 
 use Test::More tests => 235;                      # last test to print
 
@@ -94,11 +93,11 @@ is_deeply (\@ref, [' foo ', 'b a z'],
 	'get_ordered_keys array for cookie data');
 
 SKIP: {
-	skip "No file created for stdout", 2 unless open my $tmp, '>', 'tmpout';
+	skip ("No file created for stdout", 2) unless open (my $tmp, '>tmpout');
 	select $tmp;
 	$cgi->print_data;
 	close $tmp;
-	open $tmp, '<', 'tmpout';
+	open $tmp, '<tmpout';
 	chomp (my $printed = <$tmp>);
 	is ($printed, q# foo  =  bar #, 'print_data first cookie');
 	chomp ($printed = <$tmp>);

@@ -17,7 +17,6 @@
 #===============================================================================
 
 use strict;
-use warnings;
 
 use Test::More tests => 27;                      # last test to print
 
@@ -100,11 +99,11 @@ is_deeply (\@ref, ['foo', 'bar', 'notused'],
 	'get_ordered_keys array for form data');
 
 SKIP: {
-	skip "No file created for stdout", 3 unless open my $tmp, '>', 'tmpout';
+	skip ("No file created for stdout", 3) unless open (my $tmp, '>tmpout');
 	select $tmp;
 	$cgi->print_data;
 	close $tmp;
-	open $tmp, '<', 'tmpout';
+	open $tmp, '<tmpout';
 	chomp (my $printed = <$tmp>);
 	is ($printed, q#foo = bar baz#, 'print_data double value');
 	chomp ($printed = <$tmp>);
@@ -117,7 +116,7 @@ SKIP: {
 sub post_data {
 	my $datafile = shift;
     local *STDIN;
-	open STDIN, '<', $datafile
+	open STDIN, "<$datafile"
 		or die "Cannot open test file $datafile: $!";
 	binmode STDIN;
 	my $cgi = CGI::Lite->new;
