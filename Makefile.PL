@@ -1,5 +1,3 @@
-# $Id: Makefile.PL,v 1.2 2014/05/26 16:07:02 pete Exp $
-
 use ExtUtils::MakeMaker;
 use strict;
 use warnings;
@@ -14,6 +12,19 @@ my %MF = (
 		'Test::More'    => '0',
 	},
 	LICENSE         => 'perl',
+	META_MERGE => {
+		'meta-spec' => { version => 2 },
+		resources   => {
+			bugtracker => {
+				web  => 'http://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lite'
+			},
+			repository => {
+				type => 'git',
+				url  => 'git://github.com/openstrike/perl-CGI-Lite.git',
+				web  => 'https://github.com/openstrike/perl-CGI-Lite',
+			}
+		}
+	},
 	VERSION_FROM    => 'lib/CGI/Lite.pm',
    	'dist'    =>   {
 		COMPRESS => 'gzip -9f', 
@@ -22,6 +33,7 @@ my %MF = (
 );
 
 if ($ExtUtils::MakeMaker::VERSION lt 6.55) { delete $MF{BUILD_REQUIRES}; }
+if ($ExtUtils::MakeMaker::VERSION lt 6.46) { delete $MF{META_MERGE};     }
 if ($ExtUtils::MakeMaker::VERSION lt 6.31) { delete $MF{LICENSE};        }
 WriteMakefile (%MF);
 

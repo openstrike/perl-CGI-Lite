@@ -1,23 +1,30 @@
-* v3.00
+* v2.04_01 - 6th October 2014
 
-Full test coverage (IN PROGRESS)
+Full test coverage of non-deprecated features.
+
+BUG FIX: Multi-file uploads could break if the buffer end occured in the
+    headers of one of the files. (issue 99294)
 
 BUG FIX: $cgi->set_platform ('macintosh') erroneously set platform to
     'PC' because the regex was not anchored to the start. 'macintosh'
     now results in platform 'Mac' as it should.
 
-* v2.04
+Version control moved to git.
+
+Makefile.PL extended to include resources (where available).
+
+* v2.04 - 4th July 2014
 
 Minor documentation fixes and explanation of the proposed split into
 legacy/trunk branches. No code changes from 2.03_02.
 
-* v2.03_02
+* v2.03_02 - 17th June 2014
 
 The uploads have had a minor change which may solve the windows size
 difference failures. More diagnostics were added to the failures if it
 does not.
 
-* v2.03_01
+* v2.03_01 - 13th June 2014
 
 The test multi-part upload data in the test suite has been fixed to have
 the correct (CRLF) line terminators. These tests should now pass for

@@ -10,9 +10,7 @@
 #        NOTES:  This borrows very heavily from upload.t in CGI.pm
 #       AUTHOR:  Pete Houston (cpan@openstrike.co.uk)
 #      COMPANY:  Openstrike
-#      VERSION:  $Id: uploads.t,v 1.3 2014/06/17 14:04:13 pete Exp $
 #      CREATED:  20/05/14 14:01:34
-#     REVISION:  $Revision: 1.3 $
 #===============================================================================
 
 use strict;
