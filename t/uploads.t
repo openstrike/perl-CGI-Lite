@@ -62,7 +62,8 @@ is ($cgi->set_directory ('/srhslgvsgnlsenhglsgslvngh'), 0,
 my $testdir = 'testperms';
 mkdir $testdir, 0400;
 SKIP: {
-	skip "subdir '$testdir' could not be created", 3 unless (-d $testdir);
+	skip "subdir '$testdir' could not be created", 3
+		unless (-d $testdir and not -w $testdir);
 
 	is ($cgi->set_directory ($testdir), 0, 'Set directory (unwriteable)');
 	chmod 0200, $testdir;
@@ -177,7 +178,7 @@ $cgi->set_file_type ('name');
 @sizes = qw/191 212 191 219/ if $^O eq 'MSWin32';
 for my $buf_size (256 .. 1500) {
 	$cgi->set_buffer_size($buf_size);
-	($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
+	($cgi, $form) = post_data ($datafile, $uploaddir, $cgi, 1);
 	is ($cgi->is_error, 0, "Parsing data with POST (buffer size $buf_size)");
 
 	for my $i (0..3) {
@@ -192,11 +193,11 @@ for my $buf_size (256 .. 1500) {
 }
 
 sub post_data {
-	my ($datafile, $dir, $cgi) = @_;
+	my ($datafile, $dir, $cgi, $textmode) = @_;
 	local *STDIN;
 	open STDIN, "<$datafile"
 		or die "Cannot open test file $datafile: $!";
-	binmode STDIN;
+	binmode STDIN unless $textmode;
 	$cgi ||= CGI::Lite->new;
 	$cgi->set_platform ('DOS') if $^O eq 'MSWin32';
 	$cgi->set_directory ($dir);
