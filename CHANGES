@@ -1,3 +1,11 @@
+* v2.04_03 - 8th October 2014
+
+Upload tests fixed again to solve problems for MSWin32 users:
+binmode had been erroneously left off the inputs.
+
+Fixed generation of MYMETA/META files as spec 2.0 not yet supported
+in the local build environment.
+
 * v2.04_02 - 7th October 2014
 
 Upload tests fixed to solve two problems for MSWin32 users:

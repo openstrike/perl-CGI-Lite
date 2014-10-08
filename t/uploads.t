@@ -178,7 +178,7 @@ $cgi->set_file_type ('name');
 @sizes = qw/191 212 191 219/ if $^O eq 'MSWin32';
 for my $buf_size (256 .. 1500) {
 	$cgi->set_buffer_size($buf_size);
-	($cgi, $form) = post_data ($datafile, $uploaddir, $cgi, 1);
+	($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
 	is ($cgi->is_error, 0, "Parsing data with POST (buffer size $buf_size)");
 
 	for my $i (0..3) {
@@ -193,11 +193,11 @@ for my $buf_size (256 .. 1500) {
 }
 
 sub post_data {
-	my ($datafile, $dir, $cgi, $textmode) = @_;
+	my ($datafile, $dir, $cgi) = @_;
 	local *STDIN;
 	open STDIN, "<$datafile"
 		or die "Cannot open test file $datafile: $!";
-	binmode STDIN unless $textmode;
+	binmode STDIN;
 	$cgi ||= CGI::Lite->new;
 	$cgi->set_platform ('DOS') if $^O eq 'MSWin32';
 	$cgi->set_directory ($dir);

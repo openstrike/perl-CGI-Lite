@@ -1,6 +1,6 @@
 ##++
-##     CGI Lite v2.04_02
-##     Last modified: 07 Oct 2014 (see CHANGES)
+##     CGI Lite v2.04_03
+##     Last modified: 08 Oct 2014 (see CHANGES)
 ##
 ##     Copyright (c) 1995, 1996, 1997 by Shishir Gundavaram
 ##     All Rights Reserved
@@ -513,7 +513,7 @@ require Exporter;
 ## Global Variables
 ##--
 
-$CGI::Lite::VERSION = '2.04_02';
+$CGI::Lite::VERSION = '2.04_03';
 
 ##++
 ##  Start

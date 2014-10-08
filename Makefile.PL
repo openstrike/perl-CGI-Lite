@@ -11,17 +11,26 @@ my %MF = (
 		'Test::More'    => '0',
 	},
 	LICENSE         => 'perl',
+# META_MERGE cannot be made to work with spec version 2.0 and 
+# my old ExtUtils::MakeMaker.
+# Restrict it to 1.4 for now
 	META_MERGE => {
-		'meta-spec' => { version => 2 },
+		'meta-spec' => {
+			version => 1.4,
+#			version => 2,
+#			url => 'https://metacpan.org/pod/CPAN::Meta::Spec'
+		},
 		resources   => {
-			bugtracker => {
-				web  => 'http://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lite'
-			},
-			repository => {
-				type => 'git',
-				url  => 'git://github.com/openstrike/perl-CGI-Lite.git',
-				web  => 'https://github.com/openstrike/perl-CGI-Lite',
-			}
+			bugtracker => 'http://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lite',
+			repository => 'https://github.com/openstrike/perl-CGI-Lite',
+#			bugtracker => {
+#				web  => 'http://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lite'
+#			},
+#			repository => {
+#				type => 'git',
+#				url  => 'git://github.com/openstrike/perl-CGI-Lite.git',
+#				web  => 'https://github.com/openstrike/perl-CGI-Lite',
+#			}
 		}
 	},
 	VERSION_FROM    => 'lib/CGI/Lite.pm',

@@ -1,7 +1,7 @@
-CGI::Lite v2.04_02
+CGI::Lite v2.04_03
 ----------------
 
-Released: 7th Oct 2014
+Released: 8th Oct 2014
 
 
 DESCRIPTION
@@ -15,8 +15,10 @@ yourself with the actual details behind the decoding process.
 NEW IN THIS VERSION
 -------------------
 
-Upload tests fixed to solve two problems for MSWin32 users:
-permissions-based tests skipped and coversion algorithms for text MIME
-types improved.
+Upload tests fixed again to solve problems for MSWin32 users:
+binmode had been erroneously left off the inputs.
+
+Fixed generation of MYMETA/META files as spec 2.0 not yet supported
+in the local build environment.
 
 See the CHANGES file for full history.
