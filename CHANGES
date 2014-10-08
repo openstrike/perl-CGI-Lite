@@ -1,4 +1,9 @@
-* v2.04_03 - 8th October 2014
+* v2.04_04 - 8th October 2014
+
+Conversion section of _store() replaced to remove dependence on \K
+escape which was only introduced in perl 5.10.
+
+* v2.04_03 - Not released
 
 Upload tests fixed again to solve problems for MSWin32 users:
 binmode had been erroneously left off the inputs.

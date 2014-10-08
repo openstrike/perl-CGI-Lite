@@ -1,4 +1,4 @@
-CGI::Lite v2.04_03
+CGI::Lite v2.04_04
 ----------------
 
 Released: 8th Oct 2014
@@ -14,6 +14,9 @@ yourself with the actual details behind the decoding process.
 
 NEW IN THIS VERSION
 -------------------
+
+Conversion section of _store() replaced to remove dependence on \K
+escape which was only introduced in perl 5.10.
 
 Upload tests fixed again to solve problems for MSWin32 users:
 binmode had been erroneously left off the inputs.
