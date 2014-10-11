@@ -25,7 +25,7 @@ use lib './lib';
 
 BEGIN { use_ok ('CGI::Lite') }
 
-is ($CGI::Lite::VERSION, '2.04_04', 'Version test');
+is ($CGI::Lite::VERSION, '2.04_05', 'Version test');
 is (CGI::Lite::Version (), $CGI::Lite::VERSION, 'Version subroutine test');
 
 my $cgi = CGI::Lite->new ();

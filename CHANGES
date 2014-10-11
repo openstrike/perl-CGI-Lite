@@ -1,3 +1,8 @@
+* v2.04_05 - 11th October 2014
+
+binmode forced on all file writes to avoid corruption when converting
+EOLs on MSWin32.
+
 * v2.04_04 - 8th October 2014
 
 Conversion section of _store() replaced to remove dependence on \K

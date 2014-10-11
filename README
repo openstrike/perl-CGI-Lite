@@ -1,7 +1,7 @@
-CGI::Lite v2.04_04
+CGI::Lite v2.04_05
 ----------------
 
-Released: 8th Oct 2014
+Released: 11th Oct 2014
 
 
 DESCRIPTION
@@ -15,13 +15,7 @@ yourself with the actual details behind the decoding process.
 NEW IN THIS VERSION
 -------------------
 
-Conversion section of _store() replaced to remove dependence on \K
-escape which was only introduced in perl 5.10.
-
-Upload tests fixed again to solve problems for MSWin32 users:
-binmode had been erroneously left off the inputs.
-
-Fixed generation of MYMETA/META files as spec 2.0 not yet supported
-in the local build environment.
+binmode forced on all file writes to avoid corruption when converting
+EOLs on MSWin32.
 
 See the CHANGES file for full history.

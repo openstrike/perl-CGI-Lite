@@ -1,6 +1,6 @@
 ##++
-##     CGI Lite v2.04_04
-##     Last modified: 08 Oct 2014 (see CHANGES)
+##     CGI Lite v2.04_05
+##     Last modified: 11 Oct 2014 (see CHANGES)
 ##
 ##     Copyright (c) 1995, 1996, 1997 by Shishir Gundavaram
 ##     All Rights Reserved
@@ -513,7 +513,7 @@ require Exporter;
 ## Global Variables
 ##--
 
-$CGI::Lite::VERSION = '2.04_04';
+$CGI::Lite::VERSION = '2.04_05';
 
 ##++
 ##  Start
@@ -1158,27 +1158,26 @@ sub _store
 	$info, $seen) = @_;
 
     if ($file) {
-	if ($convert) {
-		if ($platform eq 'PC') {
-			$$info =~ s/\015(?=[^\012])|(?<=[^\015])\012/$eol/og;
-		} else {
-	    	$$info =~ s/\015\012/$eol/og;
-	    	$$info =~ s/\015/$eol/og      if ($platform ne 'Mac');
-	    	$$info =~ s/\012/$eol/og      if ($platform ne 'Unix');
+		if ($convert) {
+			if ($platform eq 'PC') {
+				$$info =~ s/\015(?=[^\012])|(?<=[^\015])\012/$eol/og;
+			} else {
+	    		$$info =~ s/\015\012/$eol/og;
+				$$info =~ s/\015/$eol/og      if ($platform ne 'Mac');
+				$$info =~ s/\012/$eol/og      if ($platform ne 'Unix');
+			}
 		}
-	} else {
+
 		binmode $handle;
+		print $handle $$info;
+
+	} elsif ($field) {
+		if ($seen->{$field} > 1) {
+			$self->{web_data}->{$field}->[$seen->{$field}-1] .= $$info;
+		} else {
+			$self->{web_data}->{$field} .= $$info;
+		}
 	}
-
-    	print $handle $$info;
-
-    } elsif ($field) {
-	if ($seen->{$field} > 1) {
-	    $self->{web_data}->{$field}->[$seen->{$field}-1] .= $$info;
-	} else {
-	    $self->{web_data}->{$field} .= $$info;
-        }
-    }
 }
 
 sub _get_file_name
