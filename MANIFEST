@@ -7,6 +7,7 @@ examples/print			Example 5
 examples/reference		Example 6
 examples/upload			Example 7
 lib/CGI/Lite.pm			CGI::Lite Module
+LICENSE					Licence details
 Makefile.PL			Makefile Generator
 MANIFEST			This File
 README				Readme File
@@ -14,6 +15,7 @@ t/basic.t
 t/cookie.t
 t/forms.t
 t/good_upload.txt
+t/mime_upload.txt
 t/post_text.txt
 t/uploads.t
 TODO				Future work?

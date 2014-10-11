@@ -1,6 +1,6 @@
 ##++
-##     CGI Lite v2.04_01
-##     Last modified: 06 Oct 2014 (see CHANGES)
+##     CGI Lite v2.99_01
+##     Last modified: 28 Oct 2014 (see CHANGES)
 ##
 ##     Copyright (c) 1995, 1996, 1997 by Shishir Gundavaram
 ##     All Rights Reserved
@@ -8,6 +8,8 @@
 ##     Permission  to  use,  copy, and distribute is hereby granted,
 ##     providing that the above copyright notice and this permission
 ##     appear in all copies and in supporting documentation.
+##
+##     Changes in versions 2.03 and newer copyright (c) 2014 Pete Houston
 ##--
 
 ###############################################################################
@@ -43,7 +45,7 @@ CGI::Lite - Process and decode WWW forms and cookies
     $size = $cgi->set_buffer_size ($some_buffer_size);
 
     $status = $cgi->set_directory ('/some/dir');
-    $cgi->set_directory ('/some/dir') || die "Directory doesn't exist.\n";
+    $cgi->set_directory ('/some/dir') or die "Directory doesn't exist.\n";
 
     $cgi->close_all_files;
 
@@ -140,7 +142,7 @@ the CGI object is reused for multiple requests. e.g.
 	while (FCGI::accept > 0)
 	{
 		$Query = $CGI->parse_new_form_data();
-		<process query>
+		# process query
 	}
 
 =item B<parse_cookies>
@@ -346,7 +348,7 @@ Sometimes, it is convenient to have scalar variables that represent
 the various keys in a hash. You can use this method to do just that.
 Say you have a hash like the following:
 
-    %form = ('name'   => 'shishir gundavaram',
+    %form = ('name'   => 'alan wells',
 	     'sport'  => 'track and field',
 	     'events' => '100m');
 
@@ -426,7 +428,7 @@ introduced into the language since 1996.
 With this in mind, there will be two maintained branches of this module
 going forwards. The 2.x branch will retain the backwards compatibility
 but will not have any new features introduced. Changes to this branch
-will be bug fixes only. The new 3.x branch (unwritten as of July 2014)
+will be bug fixes only. The new 3.x branch (unreleased as of October 2014)
 will be the main release and will require a more modern perl (version
 still to be determined but 5.6.0 would be the bare minumum). That 3.x
 branch will have new features and will remove some of the legacy code
@@ -446,6 +448,10 @@ and can be found at your local CPAN mirror.
 L<CGI::Lite::Request> uses similar method names to CGI.pm thus allowing
 easy transition between them. It uses this module as a
 dependency.
+
+=head1 REPOSITORY
+
+L<https://github.com/openstrike/perl-CGI-Lite/tree/legacy-master>
 
 =head1 MAINTAINER
 
@@ -494,6 +500,11 @@ Smylers, Andreas, Ben and Shishir.
 
      Changes in versions 2.03 - present copyright 2014 by Pete Houston
 
+=head1 LICENCE
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
 =cut
 
 ###############################################################################
@@ -513,7 +524,7 @@ require Exporter;
 ## Global Variables
 ##--
 
-$CGI::Lite::VERSION = '2.04_01';
+$CGI::Lite::VERSION = '2.99_01';
 
 ##++
 ##  Start
@@ -1158,23 +1169,26 @@ sub _store
 	$info, $seen) = @_;
 
     if ($file) {
-	if ($convert) {
-	    $$info =~ s/\015\012/$eol/og  if ($platform ne 'PC');
-	    $$info =~ s/\015/$eol/og      if ($platform ne 'Mac');
-	    $$info =~ s/\012/$eol/og      if ($platform ne 'Unix');
-	} else {
+		if ($convert) {
+			if ($platform eq 'PC') {
+				$$info =~ s/\015(?=[^\012])|(?<=[^\015])\012/$eol/og;
+			} else {
+	    		$$info =~ s/\015\012/$eol/og;
+				$$info =~ s/\015/$eol/og      if ($platform ne 'Mac');
+				$$info =~ s/\012/$eol/og      if ($platform ne 'Unix');
+			}
+		}
+
 		binmode $handle;
+		print $handle $$info;
+
+	} elsif ($field) {
+		if ($seen->{$field} > 1) {
+			$self->{web_data}->{$field}->[$seen->{$field}-1] .= $$info;
+		} else {
+			$self->{web_data}->{$field} .= $$info;
+		}
 	}
-
-    	print $handle $$info;
-
-    } elsif ($field) {
-	if ($seen->{$field} > 1) {
-	    $self->{web_data}->{$field}->[$seen->{$field}-1] .= $$info;
-	} else {
-	    $self->{web_data}->{$field} .= $$info;
-        }
-    }
 }
 
 sub _get_file_name

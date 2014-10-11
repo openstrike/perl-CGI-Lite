@@ -13,18 +13,21 @@ my %MF = (
 	},
 	LICENSE         => 'perl',
 	META_MERGE => {
-		'meta-spec' => { version => 2 },
+		'meta-spec' => { version => 1.4 },
 		resources   => {
-			bugtracker => {
-				web  => 'http://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lite'
-			},
-			repository => {
-				type => 'git',
-				url  => 'git://github.com/openstrike/perl-CGI-Lite.git',
-				web  => 'https://github.com/openstrike/perl-CGI-Lite',
-			}
+			bugtracker => 'http://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lite',
+			repository => 'https://github.com/openstrike/perl-CGI-Lite',
+#			bugtracker => {
+#				web  => 'http://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lite'
+#			},
+#			repository => {
+#				type => 'git',
+#				url  => 'git://github.com/openstrike/perl-CGI-Lite.git',
+#				web  => 'https://github.com/openstrike/perl-CGI-Lite',
+#			}
 		}
 	},
+	MIN_PERL_VERSION    => '5.6.0',
 	VERSION_FROM    => 'lib/CGI/Lite.pm',
    	'dist'    =>   {
 		COMPRESS => 'gzip -9f', 
@@ -32,9 +35,10 @@ my %MF = (
    	}
 );
 
-if ($ExtUtils::MakeMaker::VERSION lt 6.55) { delete $MF{BUILD_REQUIRES}; }
-if ($ExtUtils::MakeMaker::VERSION lt 6.46) { delete $MF{META_MERGE};     }
-if ($ExtUtils::MakeMaker::VERSION lt 6.31) { delete $MF{LICENSE};        }
+if ($ExtUtils::MakeMaker::VERSION lt 6.55) { delete $MF{BUILD_REQUIRES};   }
+if ($ExtUtils::MakeMaker::VERSION lt 6.48) { delete $MF{MIN_PERL_VERSION}; }
+if ($ExtUtils::MakeMaker::VERSION lt 6.46) { delete $MF{META_MERGE};       }
+if ($ExtUtils::MakeMaker::VERSION lt 6.31) { delete $MF{LICENSE};          }
 WriteMakefile (%MF);
 
 print <<End_of_Text;

@@ -1,7 +1,7 @@
-CGI::Lite v2.04_01
+CGI::Lite v2.04_05
 ----------------
 
-Released: 6th Oct 2014
+Released: 11th Oct 2014
 
 
 DESCRIPTION
@@ -15,17 +15,7 @@ yourself with the actual details behind the decoding process.
 NEW IN THIS VERSION
 -------------------
 
-Full test coverage of non-deprecated features.
-
-BUG FIX: Multi-file uploads could break if the buffer end occured in the
-    headers of one of the files. (issue 99294)
-
-BUG FIX: $cgi->set_platform ('macintosh') erroneously set platform to
-    'PC' because the regex was not anchored to the start. 'macintosh'
-    now results in platform 'Mac' as it should.
-
-Version control moved to git.
-
-Makefile.PL extended to include resources (where available).
+binmode forced on all file writes to avoid corruption when converting
+EOLs on MSWin32.
 
 See the CHANGES file for full history.
