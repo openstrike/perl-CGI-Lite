@@ -33,6 +33,7 @@ my %MF = (
 #			}
 		}
 	},
+	MIN_PERL_VERSION => '5.2.0',
 	VERSION_FROM    => 'lib/CGI/Lite.pm',
    	'dist'    =>   {
 		COMPRESS => 'gzip -9f', 
@@ -41,6 +42,7 @@ my %MF = (
 );
 
 if ($ExtUtils::MakeMaker::VERSION lt 6.55) { delete $MF{BUILD_REQUIRES}; }
+if ($ExtUtils::MakeMaker::VERSION lt 6.48) { delete $MF{MIN_PERL_VERSION}; }
 if ($ExtUtils::MakeMaker::VERSION lt 6.46) { delete $MF{META_MERGE};     }
 if ($ExtUtils::MakeMaker::VERSION lt 6.31) { delete $MF{LICENSE};        }
 WriteMakefile (%MF);
