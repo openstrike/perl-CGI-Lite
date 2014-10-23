@@ -1,3 +1,7 @@
+* v2.05 - 23rd October 2014
+
+Documentation improvements, Makefile.PL tweaks.
+
 * v2.04_05 - 11th October 2014
 
 binmode forced on all file writes to avoid corruption when converting

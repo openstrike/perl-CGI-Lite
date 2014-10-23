@@ -1,7 +1,7 @@
-CGI::Lite v2.04_05
+CGI::Lite v2.05
 ----------------
 
-Released: 11th Oct 2014
+Released: 23rd Oct 2014
 
 
 DESCRIPTION
@@ -15,7 +15,34 @@ yourself with the actual details behind the decoding process.
 NEW IN THIS VERSION
 -------------------
 
+Documentation improvements, Makefile.PL tweaks.
+
+Changes since last stable release:
+
 binmode forced on all file writes to avoid corruption when converting
 EOLs on MSWin32.
+
+Upload tests fixed again to solve problems for MSWin32 users:
+binmode had been erroneously left off the inputs.
+
+Fixed generation of MYMETA/META files as spec 2.0 not yet supported
+in the local build environment.
+
+Upload tests fixed to solve two problems for MSWin32 users:
+permissions-based tests skipped and coversion algorithms for text MIME
+types improved.
+
+Full test coverage of non-deprecated features.
+
+BUG FIX: Multi-file uploads could break if the buffer end occured in the
+    headers of one of the files. (issue 99294)
+
+BUG FIX: $cgi->set_platform ('macintosh') erroneously set platform to
+    'PC' because the regex was not anchored to the start. 'macintosh'
+    now results in platform 'Mac' as it should.
+
+Version control moved to git.
+
+Makefile.PL extended to include resources (where available).
 
 See the CHANGES file for full history.
