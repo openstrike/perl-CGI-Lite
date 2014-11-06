@@ -83,12 +83,12 @@ CGI::Lite - Process and decode WWW forms and cookies
     $cgi->create_variables (\%form);
     $cgi->create_variables ($form);
 
-    $escaped_string = browser_escape ($string);
+    $escaped_string = $cgi->browser_escape ($string);
 
-    $encoded_string = url_encode ($string);
-    $decoded_string = url_decode ($string);
+    $encoded_string = $cgi->url_encode ($string);
+    $decoded_string = $cgi->url_decode ($string);
 
-    $status = is_dangerous ($string);
+    $status = $cgi->is_dangerous ($string);
     $safe_string = escape_dangerous_chars ($string); # ***use is discouraged***
 
 =head1 DESCRIPTION
@@ -510,21 +510,24 @@ under the same terms as Perl itself.
 ###############################################################################
 
 package CGI::Lite;
-require 5.002;
-require Exporter;
 
-@ISA    =    (Exporter);
-@EXPORT = qw (browser_escape
-              url_encode
-              url_decode
-              is_dangerous
-              escape_dangerous_chars);
+use strict;
+use warnings;
+
+require 5.6.0;
+
+use Symbol;
 
 ##++
 ## Global Variables
 ##--
 
-$CGI::Lite::VERSION = '2.99_01';
+BEGIN {
+	our @ISA     = 'Exporter';
+	our @EXPORT  = qw/browser_escape url_encode url_decode is_dangerous/;
+}
+
+our $VERSION = '2.99_01';
 
 ##++
 ##  Start
@@ -696,8 +699,10 @@ sub parse_form_data
 {
     my ($self, $user_request) = @_;
     my ($request_method, $content_length, $content_type, $query_string,
-	$boundary, $post_data, @query_input);
+		$boundary, $post_data, @query_input);
 
+	# Force into object method
+	unless (ref ($self)) { $self = $self->new; }
     $request_method = $user_request || $ENV{REQUEST_METHOD} || '';
     $content_length = $ENV{CONTENT_LENGTH};
     $content_type   = $ENV{CONTENT_TYPE};
@@ -872,13 +877,17 @@ sub return_error
 }
 
 ##++
-##  Exported Subroutines
+##  Exported Subroutines and Methods
 ##--
 
 sub browser_escape
 {
-    my $string = shift;
+    my ($self, $string) = @_;
 
+	unless (ref ($self) eq 'CGI::Lite') {
+		warn "Non-method use of browser_escape is deprecated";
+		$string = $self;
+	}
     $string =~ s/([<&"#%>])/sprintf ('&#%d;', ord ($1))/ge;
 
     return $string;
@@ -886,7 +895,12 @@ sub browser_escape
 
 sub url_encode
 {
-    my $string = shift;
+    my ($self, $string) = @_;
+
+	unless (ref ($self) eq 'CGI::Lite') {
+		warn "Non-method use of url_encode is deprecated";
+		$string = $self;
+	}
 
     $string =~ s/([^-.\w ])/sprintf('%%%02X', ord $1)/ge;
     $string =~ tr/ /+/;
@@ -896,7 +910,12 @@ sub url_encode
 
 sub url_decode
 {
-    my $string = shift;
+    my ($self, $string) = @_;
+
+	unless (ref ($self) eq 'CGI::Lite') {
+		warn "Non-method use of url_decode is deprecated";
+		$string = $self;
+	}
 
     $string =~ tr/+/ /;
     $string =~ s/%([\da-fA-F]{2})/chr (hex ($1))/eg;
@@ -906,7 +925,12 @@ sub url_decode
 
 sub is_dangerous
 {
-    my $string = shift;
+    my ($self, $string) = @_;
+
+	unless (ref ($self) eq 'CGI::Lite') {
+		warn "Non-method use of is_dangerous is deprecated";
+		$string = $self;
+	}
 
     if ($string =~ /[;<>\*\|`&\$!#\(\)\[\]\{\}:'"]/) {
         return (1);
@@ -992,8 +1016,8 @@ sub _decode_url_encoded_data
 		$value =~ s/^\s+|\s+$//g;
 	}
 
-	$key   = url_decode($key);
-	$value = url_decode($value);
+	$key   = $self->url_decode($key);
+	$value = $self->url_decode($value);
 	
 	if ( defined ($self->{web_data}->{$key}) ) {
 	    $self->{web_data}->{$key} = [$self->{web_data}->{$key}] 
@@ -1037,12 +1061,11 @@ sub _parse_multipart_data
     $byte_count  = 0;
     $platform    = $self->{platform};
     $eol         = $self->{eol}->{$platform};
-    $handle      = 'CL00';
     $directory   = $self->{multipart_dir} || $self->{default_dir};
 
     while (1) {
 	if ( ($byte_count < $total_bytes) &&
-	     (length ($current_buffer) < ($buffer_size * 2)) ) {
+	     (length ($current_buffer || '') < ($buffer_size * 2)) ) {
 
 	    $bytes_left  = $total_bytes - $byte_count;
 	    $buffer_size = $bytes_left if ($bytes_left < $buffer_size);
@@ -1096,7 +1119,7 @@ sub _parse_multipart_data
 		$self->_store ($platform, $file, $convert, $handle, $eol, 
 			       $field, \$store, $seen);
 
-		close ($handle) if (fileno ($handle));
+		close ($handle) if (ref ($handle) and fileno ($handle));
 
 		if ($mime_type && $self->{convert}->{$mime_type}) {
 		    $convert = 1;
@@ -1129,7 +1152,7 @@ sub _parse_multipart_data
                     $full_path = join ($self->{file}->{$platform}, 
                                        $directory, $new_name);
 
-                    open (++$handle, ">$full_path") 
+                    open ($handle, ">$full_path") 
 	                || $self->_error ("Can't create file: $full_path!");
 
                     $files->{$new_name} = $full_path;
@@ -1222,13 +1245,13 @@ sub _create_handles
 
     $package = $self->_determine_package;
 
-    while (($name, $path) = each %$files) {
-	$handle = "$package\:\:$name";
-	open ($handle, "<$path")
-            || $self->_error ("Can't read file: $path!");
+	while (($name, $path) = each %$files) {
+		$handle = Symbol::qualify_to_ref ($name, $package);
+		open ($handle, '<', $path)
+			or $self->_error ("Can't read file: $path!");
 
-	push (@{ $self->{all_handles} }, $handle);
-    }
+		push (@{ $self->{all_handles} }, $handle);
+	}
 }
 
 sub close_all_files

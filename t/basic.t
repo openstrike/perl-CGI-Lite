@@ -33,16 +33,15 @@ my $cgi = CGI::Lite->new ();
 
 is (ref $cgi, 'CGI::Lite', 'New');
 
-is (browser_escape ('<&>'), '&#60;&#38;&#62;', 'browser_escape');
+is ($cgi->browser_escape ('<&>'), '&#60;&#38;&#62;', 'browser_escape');
 
 {
-	no warnings 'qw';
-	my @from = qw/! " # $ % ^ & * ( ) _ + - =/;
+	my @from = split (/ /, q/! " # $ % ^ & * ( ) _ + - =/);
 	my @to   = qw/%21 %22 %23 %24 %25 %5E %26 %2A %28 %29 _ %2B - %3D/;
 
 	for my $i (0..$#from) {
-		is (url_encode($from[$i]), $to[$i], "url_encode $from[$i]");
-		is (url_decode($to[$i]), $from[$i], "url_decode $to[$i]");
+		is ($cgi->url_encode($from[$i]), $to[$i], "url_encode $from[$i]");
+		is ($cgi->url_decode($to[$i]), $from[$i], "url_decode $to[$i]");
 	}
 }
 
@@ -52,9 +51,9 @@ for my $i(0..255) {
 	my $chr = chr($i);
 	if (index ($dangerous, $chr) eq -1) {
 		# Not
-		is (is_dangerous ($chr), 0, "Dangerous $i (not)");
+		is ($cgi->is_dangerous ($chr), 0, "Dangerous $i (not)");
 	} else {
-		is (is_dangerous ($chr), 1, "Dangerous $i");
+		is ($cgi->is_dangerous ($chr), 1, "Dangerous $i");
 	}
 }
 
