@@ -704,7 +704,7 @@ sub parse_form_data
 	# Force into object method
 	unless (ref ($self)) { $self = $self->new; }
     $request_method = $user_request || $ENV{REQUEST_METHOD} || '';
-    $content_length = $ENV{CONTENT_LENGTH};
+    $content_length = $ENV{CONTENT_LENGTH} || 0;
     $content_type   = $ENV{CONTENT_TYPE};
 
     if ($request_method =~ /^(get|head)$/i) {
@@ -724,8 +724,6 @@ sub parse_form_data
 
 		if (!$content_type || 
 	    	($content_type =~ /^application\/x-www-form-urlencoded/)) {
-
-	    	local $^W = 0;
 
 	    	read (STDIN, $post_data, $content_length);
 	    	$self->_decode_url_encoded_data (\$post_data, 'form');

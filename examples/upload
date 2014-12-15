@@ -1,16 +1,18 @@
-#!/usr/local/bin/perl5
+#!/usr/bin/perl
 
 # Simple example that displays the data associated with
 # the "readme" file field in a multiform/form-data request.
 
+use strict;
+use warnings;
 use CGI::Lite;
 
-$cgi = new CGI::Lite;
+my $cgi = CGI::Lite->new;
 
 # Die if the directory is invalid (i.e doesn't exist, can't
 # read or write to it, or is not a directory).
 
-$cgi->set_directory ("/tmp") || die "Directory doesn't exist.\n";
+$cgi->set_directory ("/tmp") or die "Directory doesn't exist.\n";
 
 # Set the platform. "Unix" is the default. The method accepts 
 # platforms in a case insensitive manner, so you can pass 
@@ -46,12 +48,12 @@ $cgi->remove_mime_type ('text/html');
 
 # Let's go ahead and parse the data!
 
-$data = $cgi->parse_form_data;
+my $data = $cgi->parse_form_data;
 
 print "Content-type: text/plain", "\n\n";
 
 if ($cgi->is_error) {
-    $error_message = $cgi->get_error_message;
+    my $error_message = $cgi->get_error_message;
 
     print <<End_of_Error;
 
@@ -72,7 +74,7 @@ End_of_Error
     #
     # NOTE: $readme also contains the name of the file.
 
-    $readme = $data->{readme};
+    my $readme = $data->{readme};
 
     print <<End_of_Header;
 
