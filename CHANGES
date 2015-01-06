@@ -1,3 +1,8 @@
+* v2.99_01
+
+print_cookie_data and print_form_data have been removed. They had been
+deprecated for well over a decade.
+
 * v2.04_05 - 11th October 2014
 
 binmode forced on all file writes to avoid corruption when converting

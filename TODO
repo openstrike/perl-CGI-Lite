@@ -9,6 +9,12 @@ Consider adding a routine to set cookies.
 Decide whether to tighten validation of cookie names.
 Decide on the appropriate action to take when presented with multiple
 cookies with the same name and document it.
+Implement a limiter on data uploads. One or more of:
+    1. A boolean flag to allow file uploads, set to on by default.
+    2. A per-file size limit, set to unlimited by default.
+    3. A limit on the entire data uploaded, set to some large value by
+    default (maybe 10MB?). This is analogous to what CGI.pm does.
+
 
 Write tests for:
 	EOL processing for the different mime types

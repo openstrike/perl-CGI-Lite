@@ -16,7 +16,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11254;                      # last test to print
+use Test::More tests => 11255;                      # last test to print
 
 use lib './lib';
 
@@ -191,6 +191,11 @@ for my $buf_size (256 .. 1500) {
 		unlink ($file);
 	}
 }
+
+$cgi->deny_uploads (1);
+($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
+is ($cgi->is_error, 1, "Upload successfully denied");
+
 
 sub post_data {
 	my ($datafile, $dir, $cgi) = @_;

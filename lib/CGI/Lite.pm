@@ -73,9 +73,6 @@ CGI::Lite - Process and decode WWW forms and cookies
 
     $cgi->print_data;
 
-    $cgi->print_form_data;   # (deprecated as of v1.8)
-    $cgi->print_cookie_data; # (deprecated as of v1.8)
-
     $new_string = $cgi->wrap_textarea ($string, $length);
 
     @all_values = $cgi->get_multiple_values ($reference);
@@ -191,6 +188,14 @@ You can specify either (case insensitive):
 
 "Unix" is the default.
 
+=item B<set_size_limit>
+
+TODO
+
+=item B<deny_uploads>
+
+TODO
+
 =item B<set_directory>
 
 Used to set the directory where the uploaded files will be stored 
@@ -304,16 +309,8 @@ Ordered keys.
 =item B<print_data>
 
 Displays all the key/value pairs (either form data or cookie information)
-in a ordered fashion. The methods B<print_form_data> and B<print_cookie_data>
-are deprecated as of version v1.8, and will be removed in future versions.
-
-=item B<print_form_data>
-
-Deprecated as of v1.8, see B<print_data>.
-
-=item B<print_cookie_data> (deprecated as of v1.8)
-
-Deprecated as of v1.8, see B<print_data>.
+in a ordered fashion. The deprecated methods B<print_form_data> and
+B<print_cookie_data> have been removed in version 3.0.
 
 =item B<wrap_textarea>
 
@@ -551,6 +548,8 @@ sub new
 	        error_status     =>    0,
 	        error_message    =>    undef,
 		file_size_limit	 =>    2097152,
+		size_limit       =>    -1,
+		deny_uploads     =>     0,
 	    };
 
     $self->{convert} = { 
@@ -568,6 +567,27 @@ sub new
 sub Version 
 { 
     return $VERSION;
+}
+
+sub deny_uploads
+{
+	my ($self, $newval) = @_;
+	if (defined $newval) {
+		$self->{deny_uploads} = $newval ? 1 : 0;
+	}
+	return $self->{deny_uploads};
+}
+
+sub set_size_limit
+{
+	my ($self, $limit) = @_;
+	return unless defined $limit;
+	if ($limit =~ /^[0-9]+$/) {
+		$self->{size_limit} = $limit;
+	} else {
+		$self->{size_limit} = -1;
+	}
+	return $self->{size_limit};
 }
 
 sub set_directory
@@ -707,6 +727,13 @@ sub parse_form_data
     $content_length = $ENV{CONTENT_LENGTH} || 0;
     $content_type   = $ENV{CONTENT_TYPE};
 
+	# If we've set a size limit, check that it has not been exceeded
+	if ($self->{size_limit} > -1 and $content_length > $self->{size_limit}) {
+		$self->_error ("Content lenth $content_length exceeds limit of " .
+		 	$self->{size_limit});
+		return;
+	}
+
     if ($request_method =~ /^(get|head)$/i) {
 
 		$query_string = $ENV{QUERY_STRING};
@@ -732,6 +759,12 @@ sub parse_form_data
 				%{ $self->{web_data} } : $self->{web_data};
 
 		} elsif ($content_type =~ /multipart\/form-data/) {
+
+			if ($self->{deny_uploads}) {
+				$self->_error ("multipart/form-data unacceptable when ".
+					"deny_uploads is set");
+				return;
+			}
 	    	($boundary) = $content_type =~ /boundary=(\S+)$/;
 	    	$self->_parse_multipart_data ($content_length, $boundary);
 
@@ -809,8 +842,6 @@ sub print_mime_type
 
     return($self->{'mime_types'}->{$field});
 }
-
-*print_form_data = *print_cookie_data = \&print_data;
 
 sub wrap_textarea
 {
@@ -984,53 +1015,47 @@ sub _determine_package
 sub _decode_url_encoded_data
 {
     my ($self, $reference_data, $type) = @_;
-    my $code;
-
-    $code = <<'End_of_URL_Decode';
+    return unless ($$reference_data);
 
     my (@key_value_pairs, $delimiter, $key_value, $key, $value);
 
     @key_value_pairs = ();
 
-    return unless ($$reference_data);
-
     if ($type eq 'cookies') {
-	$delimiter = '[;,]\s*';
+		$delimiter = qr/[;,]\s*/;
     } else {
-	$delimiter = '[;&]';
+		# Only other option is form data
+		$delimiter = qr/[;&]/;
     }
 
-    @key_value_pairs = split (/$delimiter/, $$reference_data);
+    @key_value_pairs = split ($delimiter, $$reference_data);
 		
     foreach $key_value (@key_value_pairs) {
-	($key, $value) = split (/=/, $key_value, 2);
+		($key, $value) = split (/=/, $key_value, 2);
 
-	$value = '' unless defined $value;	# avoid 'undef' warnings for "key=" BDL Jan/99
-	next unless defined $key;  # avoid 'undef' warnings for bogus URLs like 'foobar.cgi?&foo=bar'  
+		$value = '' unless defined $value;	# avoid 'undef' warnings for "key=" BDL Jan/99
+		next unless defined $key;  # avoid 'undef' warnings for bogus URLs like 'foobar.cgi?&foo=bar'  
 	
-	if ($type eq 'cookies') {
-		# Strip leading/trailling whitespace as per RFC 2965
-		$key   =~ s/^\s+|\s+$//g;
-		$value =~ s/^\s+|\s+$//g;
-	}
+		if ($type eq 'cookies') {
+			# Strip leading/trailling whitespace as per RFC 2965
+			$key   =~ s/^\s+|\s+$//g;
+			$value =~ s/^\s+|\s+$//g;
+		}
 
-	$key   = $self->url_decode($key);
-	$value = $self->url_decode($value);
+		$key   = $self->url_decode($key);
+		$value = $self->url_decode($value);
 	
-	if ( defined ($self->{web_data}->{$key}) ) {
-	    $self->{web_data}->{$key} = [$self->{web_data}->{$key}] 
-	        unless ( ref $self->{web_data}->{$key} );
+		if ( defined ($self->{web_data}->{$key}) ) {
+			$self->{web_data}->{$key} = [$self->{web_data}->{$key}] 
+				unless ( ref $self->{web_data}->{$key} );
 
-	    push (@{ $self->{web_data}->{$key} }, $value);
-	} else {
-	    $self->{web_data}->{$key} = $value;
-	    push (@{ $self->{ordered_keys} }, $key);
-	}
+			push (@{ $self->{web_data}->{$key} }, $value);
+		} else {
+			$self->{web_data}->{$key} = $value;
+			push (@{ $self->{ordered_keys} }, $key);
+		}
     }
 
-End_of_URL_Decode
-
-    eval ($code);
     $self->_error ($@) if $@;
 }
 
@@ -1041,13 +1066,10 @@ End_of_URL_Decode
 sub _parse_multipart_data
 {
     my ($self, $total_bytes, $boundary) = @_;
-    my ($code, $files);
+    my $files    = {};
+	$boundary    = quotemeta ($boundary); 
 
-    local $^W = 0;
-    $files    = {};
-	$boundary = quotemeta ($boundary); 
-
-    $code = <<'End_of_Multipart';
+    eval {
 
     my ($seen, $buffer_size, $byte_count, $platform, $eol, $handle, 
 	$directory, $bytes_left, $new_data, $old_data, $this_boundary,
@@ -1176,9 +1198,8 @@ sub _parse_multipart_data
 
     close ($handle) if (fileno ($handle));
 
-End_of_Multipart
+	}; # End of eval
 
-    eval ($code);
     $self->_error ($@) if $@;
 
     $self->_create_handles ($files) if ($self->{file_type} eq 'handle');

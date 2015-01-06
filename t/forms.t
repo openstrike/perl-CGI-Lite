@@ -19,7 +19,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 27;                      # last test to print
+use Test::More tests => 32;                      # last test to print
 
 use lib './lib';
 
@@ -114,13 +114,22 @@ SKIP: {
 	close $tmp and unlink 'tmpout';
 }
 
+($cgi, $form) = post_data ($datafile, 20);
+is ($cgi->is_error, 1, 'Posted data larger than specified limit');
+
+is ($cgi->set_size_limit ('alpha'), -1, 'Non-numeric size limit trapped');
+is ($cgi->set_size_limit (10.537), -1, 'Non-integer size limit trapped');
+is ($cgi->set_size_limit (-500), -1, 'Non-integer size limit trapped');
+is ($cgi->set_size_limit (0), 0, 'Zero size limit accepted');
+
 sub post_data {
-	my $datafile = shift;
+	my ($datafile, $size_limit) = @_;
     local *STDIN;
 	open STDIN, '<', $datafile
 		or die "Cannot open test file $datafile: $!";
 	binmode STDIN;
 	my $cgi = CGI::Lite->new;
+	$cgi->set_size_limit($size_limit) if defined $size_limit;
 	my $form = $cgi->parse_form_data;
 	close STDIN;
 	return ($cgi, $form);
