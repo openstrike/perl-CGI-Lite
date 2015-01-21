@@ -190,11 +190,19 @@ You can specify either (case insensitive):
 
 =item B<set_size_limit>
 
-TODO
+To set a specific limit on the total size of the request (in bytes) call
+this method with that size as the sole argument. A size of zero
+effectively disables POST requests. To specify an unlimited size (the
+default) use an argument of -1.
+
+Returns: the new value if provided, otherwise the existing value.
 
 =item B<deny_uploads>
 
-TODO
+To prevent any file uploads simply call this method with an argument of
+1. To enable them again, use an argument of zero.
+
+Returns: the new value if provided, otherwise the existing value.
 
 =item B<set_directory>
 
@@ -532,9 +540,9 @@ our $VERSION = '2.99_01';
 
 sub new
 {
-    my $self;
+    my $class = shift;
 
-    $self = {
+    my $self = {
 	        multipart_dir    =>    undef,
 	        default_dir      =>    '/tmp',
 	        file_type        =>    'name',
@@ -547,7 +555,7 @@ sub new
 		all_handles      =>    [],
 	        error_status     =>    0,
 	        error_message    =>    undef,
-		file_size_limit	 =>    2097152,
+		file_size_limit	 =>    2097152, # Unused as yet
 		size_limit       =>    -1,
 		deny_uploads     =>     0,
 	    };
@@ -560,7 +568,7 @@ sub new
     $self->{file} = { Unix => '/',    Mac => ':',    PC => '\\'       };
     $self->{eol}  = { Unix => "\012", Mac => "\015", PC => "\015\012" };
 
-    bless $self;
+    bless ($self, $class);
     return $self;
 }
 
@@ -821,12 +829,11 @@ sub get_ordered_keys
 sub print_data
 {
     my $self = shift;
-    my ($key, $value, $eol);
 
-    $eol = $self->{eol}->{$self->{platform}};
+    my $eol = $self->{eol}->{$self->{platform}};
 
-    foreach $key (@{ $self->{ordered_keys} }) {
-	$value = $self->{web_data}->{$key};
+    foreach my $key (@{ $self->{ordered_keys} }) {
+	my $value = $self->{web_data}->{$key};
 
 	if (ref $value) {
 	    print "$key = @$value$eol";
@@ -1017,7 +1024,7 @@ sub _decode_url_encoded_data
     my ($self, $reference_data, $type) = @_;
     return unless ($$reference_data);
 
-    my (@key_value_pairs, $delimiter, $key_value, $key, $value);
+    my (@key_value_pairs, $delimiter);
 
     @key_value_pairs = ();
 
@@ -1030,8 +1037,8 @@ sub _decode_url_encoded_data
 
     @key_value_pairs = split ($delimiter, $$reference_data);
 		
-    foreach $key_value (@key_value_pairs) {
-		($key, $value) = split (/=/, $key_value, 2);
+    foreach my $key_value (@key_value_pairs) {
+		my ($key, $value) = split (/=/, $key_value, 2);
 
 		$value = '' unless defined $value;	# avoid 'undef' warnings for "key=" BDL Jan/99
 		next unless defined $key;  # avoid 'undef' warnings for bogus URLs like 'foobar.cgi?&foo=bar'  
@@ -1172,7 +1179,7 @@ sub _parse_multipart_data
                     $full_path = join ($self->{file}->{$platform}, 
                                        $directory, $new_name);
 
-                    open ($handle, ">$full_path") 
+                    open ($handle, '>', $full_path) 
 	                || $self->_error ("Can't create file: $full_path!");
 
                     $files->{$new_name} = $full_path;
@@ -1276,9 +1283,8 @@ sub _create_handles
 sub close_all_files
 {
     my $self = shift;
-    my $handle;
 
-    foreach $handle (@{ $self->{all_handles} }) {
+    foreach my $handle (@{ $self->{all_handles} }) {
 	close $handle;
     }
 }
