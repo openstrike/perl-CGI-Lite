@@ -20,7 +20,7 @@ CGI::Lite - Process and decode WWW forms and cookies
 
 =head1 SYNOPSIS
 
-    use CGI::Lite;
+    use CGI::Lite ();
 
     $cgi = CGI::Lite->new ();
 
@@ -77,16 +77,12 @@ CGI::Lite - Process and decode WWW forms and cookies
 
     @all_values = $cgi->get_multiple_values ($reference);
 
-    $cgi->create_variables (\%form);
-    $cgi->create_variables ($form);
-
     $escaped_string = $cgi->browser_escape ($string);
 
     $encoded_string = $cgi->url_encode ($string);
     $decoded_string = $cgi->url_decode ($string);
 
     $status = $cgi->is_dangerous ($string);
-    $safe_string = escape_dangerous_chars ($string); # ***use is discouraged***
 
 =head1 DESCRIPTION
 
@@ -106,7 +102,7 @@ Here are the methods you can use to process your forms and cookies:
 This will handle the following types of requests: GET, HEAD and POST.
 By default, CGI::Lite uses the environment variable REQUEST_METHOD to 
 determine the manner in which the query/form information should be 
-decoded. However, as of v1.8, you are allowed to pass a valid request 
+decoded. However, you are also allowed to pass a valid request 
 method to this function to force CGI::Lite to decode the information in 
 a specific manner. 
 
@@ -135,10 +131,10 @@ As for parse_form_data, but clears the CGI object state before processing
 the request. This is useful in persistant application (e.g. FCGI), where
 the CGI object is reused for multiple requests. e.g.
 
-	$CGI = new CGI::Lite;
+	$CGI = CGI::Lite->new ();
 	while (FCGI::accept > 0)
 	{
-		$Query = $CGI->parse_new_form_data();
+		my $query = $CGI->parse_new_form_data ();
 		# process query
 	}
 
@@ -149,7 +145,7 @@ much the same manner as B<parse_form_data>.
 
 =item B<is_error>
 
-As of v1.8, errors in parsing are handled differently. You can use this
+You can use this
 method to check for any potential errors after you've called either
 B<parse_form_data> or B<parse_cookies>.
 
@@ -166,11 +162,12 @@ check for errors by calling the B<is_error> method.
 
 I<Return Value>
 
-The error message.
+The error message as a plain text string.
 
 =item B<return_error>
 
-You can use this method to return errors to the browser and exit. 
+You can use this method to print errors to standard output (ie. as part of
+the HTTP response) and exit. This method is deprecated as of version 3.0.
 
 =item B<set_platform>
 
@@ -349,9 +346,14 @@ Array consisting of the multiple values.
 
 =item B<create_variables>
 
-Sometimes, it is convenient to have scalar variables that represent
-the various keys in a hash. You can use this method to do just that.
-Say you have a hash like the following:
+B<This method is deprecated as of version 3.0.> It runs contrary to the
+principles of structured programming and has really nothing to do with
+CGI form or cookie handling. It will be removed entirely in later
+versions.
+
+Sometimes, it may be thought convenient to have scalar variables that
+represent the various keys in a hash. You can use this method to do
+just that.  Say you have a hash like the following:
 
     %form = ('name'   => 'alan wells',
 	     'sport'  => 'track and field',
@@ -362,7 +364,6 @@ If you call this method in the following manner:
     $cgi->create_variables (\%hash);
 
 it will create three scalar variables: $name, $sport and $events. 
-Convenient, huh? 
 
 =item B<browser_escape>
 
@@ -407,19 +408,11 @@ I<Return Value>
 
 =item B<escape_dangerous_chars>
 
-You can use this method to "escape" any dangerous meta-characters. B<The
-use of this function is strongly discouraged.> See
+The use of this function has been strongly discouraged for more than a
+decade (See
 L<https://web.archive.org/web/20100627014535/http://use.perl.org/~cbrooks/journal/10542>
 and L<http://www.securityfocus.com/archive/1/311414> for an
-advisory by Ronald F. Guilmette. Ronald's patch to make this function
-more safe is applied, but as has been pointed out on the bugtraq
-mailing list, it is still much better to run no external shell at all
-when executing commands. Please read the advisory and the WWW security
-FAQ.
-
-I<Return Value>
-
-Escaped string.
+advisory by Ronald F. Guilmette.) It has been removed as of version 3.0.
 
 =back
 
@@ -430,17 +423,17 @@ Perl back to 5.002 for a very long time. Such stability is a welcome
 attribute but it restricts the code by disallowing access to features
 introduced into the language since 1996.
 
-With this in mind, there will be two maintained branches of this module
+With this in mind, there are two maintained branches of this module
 going forwards. The 2.x branch will retain the backwards compatibility
-but will not have any new features introduced. Changes to this branch
-will be bug fixes only. The new 3.x branch (unreleased as of October 2014)
+but will not have any new features introduced. Changes to this legacy branch
+will be bug fixes only. The new 3.x branch
 will be the main release and will require a more modern perl (version
-still to be determined but 5.6.0 would be the bare minumum). That 3.x
+still to be determined but 5.6.0 would be the bare minumum). The 3.x
 branch will have new features and will remove some of the legacy code
 such as the B<print_form_data> method which has been deprecated for more
 than a decade.
 
-Requests for new features in the proposed 3.x branch should be made via
+Requests for new features in the 3.x branch should be made via
 the request tracker at L<https://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lite>
 
 =head1 SEE ALSO
@@ -456,7 +449,7 @@ dependency.
 
 =head1 REPOSITORY
 
-L<https://github.com/openstrike/perl-CGI-Lite/tree/legacy-master>
+L<https://github.com/openstrike/perl-CGI-Lite>
 
 =head1 MAINTAINER
 
@@ -973,16 +966,6 @@ sub is_dangerous
     } else {
         return (0);
     }
-}
-
-sub escape_dangerous_chars
-{
-    my $string = shift;
-
-    warn "escape_dangerous_chars() possibly dangerous. Its use is discouraged";
-    $string =~ s/([;<>\*\|`&\$!#\(\)\[\]\{\}:'"\\\?\~\^\r\n])/\\$1/g;
-
-    return $string;
 }
 
 ##++

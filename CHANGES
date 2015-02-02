@@ -3,6 +3,9 @@
 print_cookie_data and print_form_data have been removed. They had been
 deprecated for well over a decade.
 
+escape_dangerous_chars has been removed. It has been considered a
+security risk since version 2.0.
+
 * v2.04_05 - 11th October 2014
 
 binmode forced on all file writes to avoid corruption when converting
