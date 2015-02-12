@@ -19,7 +19,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 235;                      # last test to print
+use Test::More tests => 249;                      # last test to print
 
 use lib './lib';
 
@@ -35,9 +35,14 @@ $ENV{SERVER_PORT}     = 8080;
 $ENV{SERVER_NAME}     = 'there.is.no.try.com';
 $ENV{QUERY_STRING}    = '';
 
-$ENV{HTTP_COOKIE}     = 'foo=bar; baz=quux';
 my $cgi               = CGI::Lite->new ();
 my $cookies           = $cgi->parse_cookies;
+is ($cgi->is_error, 0, 'Cookie parse: no cookies, no error');
+is ($cookies, undef, 'Cookie parse: no cookies');
+
+$ENV{HTTP_COOKIE}     = 'foo=bar; baz=quux';
+$cgi                  = CGI::Lite->new ();
+$cookies              = $cgi->parse_cookies;
 my $testname          = 'simple';
 
 is ($cgi->is_error, 0, "Cookie parse ($testname)");
@@ -46,6 +51,17 @@ ok (exists $cookies->{foo}, "First cookie name ($testname)");
 is ($cookies->{foo}, 'bar', "First cookie value ($testname)");
 ok (exists $cookies->{baz}, "Second cookie name ($testname)");
 is ($cookies->{baz}, 'quux', "Second cookie value ($testname)");
+
+# And again but with a hash
+$cgi                  = CGI::Lite->new ();
+$testname             = 'simple, return hash';
+my %cookies           = $cgi->parse_cookies;
+is ($cgi->is_error, 0, "Cookie parse ($testname)");
+is (scalar keys %cookies, 2, "Cookie count ($testname)");
+ok (exists $cookies{foo}, "First cookie name ($testname)");
+is ($cookies{foo}, 'bar', "First cookie value ($testname)");
+ok (exists $cookies{baz}, "Second cookie name ($testname)");
+is ($cookies{baz}, 'quux', "Second cookie value ($testname)");
 
 
 
@@ -92,6 +108,7 @@ is_deeply ($ref, [' foo ', 'b a z'],
 my @ref = $cgi->get_ordered_keys;
 is_deeply (\@ref, [' foo ', 'b a z'], 
 	'get_ordered_keys array for cookie data');
+
 
 SKIP: {
 	skip "No file created for stdout", 2 unless open my $tmp, '>', 'tmpout';
@@ -184,3 +201,15 @@ is ($cookies->{'foo'}, '=bar', "First cookie value ($testname)");
 # RFC?
 #ok (exists $cookies->{'b a z'}, "Second cookie name ($testname)");
 #is ($cookies->{'b a z'}, 'qu ux', "Second cookie value ($testname)");
+
+$ENV{HTTP_COOKIE}     = 'foo=bar;foo=baz;foo=quux';
+$cgi                  = CGI::Lite->new ();
+$cookies              = $cgi->parse_cookies;
+$testname             = 'triple value';
+
+is ($cgi->is_error, 0, "Cookie parse ($testname)");
+is (scalar keys %$cookies, 1, "Cookie count ($testname)");
+ok (exists $cookies->{foo}, "First cookie name ($testname)");
+is ($cookies->{foo}->[0], 'bar', "First cookie value ($testname)");
+is ($cookies->{foo}->[1], 'baz', "First cookie value ($testname)");
+is ($cookies->{foo}->[2], 'quux', "First cookie value ($testname)");

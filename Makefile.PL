@@ -8,9 +8,6 @@ my %MF = (
 	NAME      =>   "CGI::Lite",
 	ABSTRACT  =>   "Process and decode WWW forms and cookies",
 	AUTHOR    =>   'Pete Houston (cpan@openstrike.co.uk)',
-	BUILD_REQUIRES => {
-		'Test::More'    => '0',
-	},
 	LICENSE         => 'perl',
 	META_MERGE => {
 		'meta-spec' => { version => 1.4 },
@@ -28,6 +25,12 @@ my %MF = (
 		}
 	},
 	MIN_PERL_VERSION    => '5.6.0',
+	PREREQ_PM       =>  {
+		'Symbol' => '0',
+	},
+	TEST_REQUIRES => {
+		'Test::More'	=> '0',
+	},
 	VERSION_FROM    => 'lib/CGI/Lite.pm',
    	'dist'    =>   {
 		COMPRESS => 'gzip -9f', 
@@ -35,6 +38,12 @@ my %MF = (
    	}
 );
 
+if ($ExtUtils::MakeMaker::VERSION lt 6.64) {
+	if ($ExtUtils::MakeMaker::VERSION ge 6.55) {
+		$MF{BUILD_REQUIRES} = $MF{TEST_REQUIRES};
+	}
+	delete $MF{TEST_REQUIRES};
+}
 if ($ExtUtils::MakeMaker::VERSION lt 6.55) { delete $MF{BUILD_REQUIRES};   }
 if ($ExtUtils::MakeMaker::VERSION lt 6.48) { delete $MF{MIN_PERL_VERSION}; }
 if ($ExtUtils::MakeMaker::VERSION lt 6.46) { delete $MF{META_MERGE};       }

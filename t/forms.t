@@ -19,7 +19,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 32;                      # last test to print
+use Test::More tests => 49;                      # last test to print
 
 use lib './lib';
 
@@ -35,8 +35,6 @@ $ENV{SERVER_PROTOCOL} = 'HTTP/1.0';
 $ENV{SERVER_PORT}     = 8080;
 $ENV{SERVER_NAME}     = 'the.good.ship.lollypop.com';
 
-CGI::Lite->parse_form_data;
-
 my $cgi   = CGI::Lite->new;
 my $form  = $cgi->parse_form_data;
 
@@ -44,6 +42,20 @@ is ($cgi->is_error, 0, 'Parsing data with GET');
 is ($form->{weather}, 'dull', 'Parsing scalar param with GET');
 is (ref $form->{game}, 'ARRAY', 'Parsing array param with GET');
 is ($form->{game}->[1], 'checkers', 'Extracting array param value with GET');
+
+# Return the hash
+my %form  = $cgi->parse_new_form_data;
+is ($cgi->is_error, 0, 'Parsing data into hash with GET');
+is ($form{weather}, 'dull', 'Parsing scalar param into hash with GET');
+is (ref $form{game}, 'ARRAY', 'Parsing array param into hash with GET');
+is ($form{game}[1], 'checkers', 'Extracting array param value into hash with GET');
+
+$form = CGI::Lite->parse_form_data;
+is ($cgi->is_error, 0, 'Parsing data via class method with GET');
+is ($form->{weather}, 'dull', 'Parsing scalar param via class method with GET');
+is (ref $form->{game}, 'ARRAY', 'Parsing array param via class method with GET');
+is ($form->{game}->[1], 'checkers', 'Extracting array param value via class method with GET');
+
 
 $ENV{QUERY_STRING}    =~ s/\&/;/g;
 $form = $cgi->parse_new_form_data;
@@ -59,21 +71,38 @@ $form = $cgi->parse_new_form_data;
 is ($cgi->is_error, 0, 'GET with missing kv pair');
 is ($form->{foo}, 'bar', 'Value after GET with missing kv pair');
 
+$ENV{REQUEST_METHOD} = undef;
+{
+	@ARGV = ("t/post_stdin.txt");
+	$form = $cgi->parse_new_form_data;
+	is ($cgi->is_error, 0, 'No request method specified');
+	@ARGV = ("/");
+	my %form = $cgi->parse_new_form_data;
+	is ($cgi->is_error, 0, 'No request method specified, hash returned');
+}
+
 # Now with POSTed application/x-www-form-urlencoded
 $ENV{REQUEST_METHOD}  = 'POST';
 $ENV{QUERY_STRING}    = '';
 my $datafile = 't/post_text.txt';
 
-$ENV{CONTENT_LENGTH}  = (stat ($datafile))[7];
-# Now what? Print to STDIN?
-#
+# Tests without CONTENT_LENGTH
+($cgi, $form) = post_data ($datafile);
+is ($cgi->is_error (), 0, 'Data posted without CONTENT_LENGTH');
 
+$ENV{CONTENT_LENGTH}  = (stat ($datafile))[7];
 ($cgi, $form) = post_data ($datafile);
 
 is ($cgi->is_error, 0, 'Parsing data with POST');
 is ($form->{bar}, 'quux', 'Parsing scalar param with POST');
 is (ref $form->{foo}, 'ARRAY', 'Parsing array param with POST');
 is ($form->{foo}->[1], 'baz', 'Extracting array param value with POST');
+
+($cgi, %form) = post_data ($datafile, undef, 1);
+is ($cgi->is_error, 0, 'Parsing data as hash with POST');
+is ($form{bar}, 'quux', 'Parsing scalar param as hash with POST');
+is (ref $form{foo}, 'ARRAY', 'Parsing array param as hash with POST');
+is ($form{foo}[1], 'baz', 'Extracting array param value as hash with POST');
 
 $ENV{CONTENT_TYPE} = 'baz';
 ($cgi, $form) = post_data ($datafile);
@@ -117,19 +146,28 @@ SKIP: {
 ($cgi, $form) = post_data ($datafile, 20);
 is ($cgi->is_error, 1, 'Posted data larger than specified limit');
 
+($cgi, $form) = post_data ($datafile, 20000);
+is ($cgi->is_error, 0, 'Posted data smaller than specified limit');
+
+is ($cgi->set_size_limit (), undef, 'Undefined size limit trapped');
 is ($cgi->set_size_limit ('alpha'), -1, 'Non-numeric size limit trapped');
 is ($cgi->set_size_limit (10.537), -1, 'Non-integer size limit trapped');
 is ($cgi->set_size_limit (-500), -1, 'Non-integer size limit trapped');
 is ($cgi->set_size_limit (0), 0, 'Zero size limit accepted');
 
 sub post_data {
-	my ($datafile, $size_limit) = @_;
+	my ($datafile, $size_limit, $array) = @_;
     local *STDIN;
 	open STDIN, '<', $datafile
 		or die "Cannot open test file $datafile: $!";
 	binmode STDIN;
 	my $cgi = CGI::Lite->new;
 	$cgi->set_size_limit($size_limit) if defined $size_limit;
+	if ($array) {
+		my %form = $cgi->parse_form_data;
+		close STDIN;
+		return ($cgi, %form);
+	}
 	my $form = $cgi->parse_form_data;
 	close STDIN;
 	return ($cgi, $form);

@@ -20,9 +20,23 @@
 use strict;
 use warnings;
 
-use Test::More tests => 306;                      # last test to print
+use Test::More tests => 316;
 
 use lib './lib';
+
+# Test exits and outputs;
+my $have_test_trap;
+our $trap; # Imported
+BEGIN {
+	eval {
+		require Test::Trap;
+		Test::Trap->import (qw/trap $trap :flow
+		:stderr(systemsafe)
+		:stdout(systemsafe)
+		:warn/);
+		$have_test_trap = 1;
+	};
+}
 
 BEGIN { use_ok ('CGI::Lite') }
 
@@ -69,6 +83,7 @@ for my $platform (qw/mac MacIntosh/) {
 $cgi->set_platform ('foo');
 is ($cgi->{platform}, 'Unix', "Set default platform");
 
+is ($cgi->wrap_textarea (), undef, 'No text to wrap');
 my $longstr = '123 456 789 0123456 7 89 0';
 is ($cgi->wrap_textarea ($longstr, 5), "123\n456\n789\n0123456\n7 89\n0",
 	"wrap_textarea Unix");
@@ -91,3 +106,39 @@ is ($cgi->get_multiple_values ('foo', 'bar'), 'foo',
 my $foobar = ['foo', 'bar'];
 my @res = $cgi->get_multiple_values ($foobar);
 is_deeply (\@res, $foobar, 'get_multiple_values (array ref argument)');
+
+like ($cgi->_get_file_name ('Unix', '/tmp', ''), qr/^\d+__/,
+	'Missing filename');
+
+{
+	no strict 'vars'; # Makes the whole thing pointless
+	no warnings 'once';
+	$cgi->create_variables ({foo => 'bar', boing => 'quux'});
+	is ($foo, 'bar', 'Create variables 1');
+	is ($boing, 'quux', 'Create variables 2');
+}
+
+# Use Test::Trap where available to test wanrings and terminating
+# functions.
+SKIP: {
+	skip "Test::Trap not available", 6 unless $have_test_trap;
+    my @r = trap { browser_escape ('a') };
+    like ($trap->stderr,
+        qr/Non-method use of browser_escape is deprecated/,
+        'Warning calling browser_escape as non-method');
+    @r = trap { url_encode ('a') };
+    like ($trap->stderr,
+        qr/Non-method use of url_encode is deprecated/,
+        'Warning calling url_encode as non-method');
+    @r = trap { url_decode ('a') };
+    like ($trap->stderr,
+        qr/Non-method use of url_decode is deprecated/,
+        'Warning calling url_decode as non-method');
+    @r = trap { is_dangerous ('a') };
+    like ($trap->stderr,
+        qr/Non-method use of is_dangerous is deprecated/,
+        'Warning calling is_dangerous as non-method');
+	@r = trap { $cgi->return_error ('Hello', 'World!') };
+	is ($trap->exit, 1, 'return_error exits');
+	is ($trap->stdout, "Hello World!\n", 'return_error prints');
+}

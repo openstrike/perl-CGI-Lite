@@ -16,7 +16,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11255;                      # last test to print
+use Test::More tests => 11271;
 
 use lib './lib';
 
@@ -45,6 +45,17 @@ is ($cgi->is_error, 0, 'Parsing data with POST');
 like ($form->{'does_not_exist_gif'}, qr/[0-9]+__does_not_exist\.gif/, 'Second file');
 like ($form->{'100;100_gif'}, qr/[0-9]+__100;100\.gif/, 'Third file');
 like ($form->{'300x300_gif'}, qr/[0-9]+__300x300\.gif/, 'Fourth file');
+is ($cgi->get_upload_type ('300x300_gif'), 'image/gif', 'MIME Type');
+
+# Same, but check it can also return as a hash
+($cgi, $form) = post_data ($datafile, $uploaddir, undef, 1);
+is ($cgi->is_error, 0, 'Parsing data with POST into hash');
+like ($form->{'does_not_exist_gif'}, qr/[0-9]+__does_not_exist\.gif/,
+	'Second file from hash');
+like ($form->{'100;100_gif'}, qr/[0-9]+__100;100\.gif/,
+	'Third file from hash');
+like ($form->{'300x300_gif'}, qr/[0-9]+__300x300\.gif/,
+	'Fourth file from hash');
 
 # XXX Duplicate field names for files do NOT work currently. Fix this
 # and then implement some tests.
@@ -84,6 +95,8 @@ ok ($#mimetypes > 0, 'get_mime_types returns array');
 is_deeply (\@mimetypes, [ 'text/html', 'text/plain' ],
 	'default mime types');
 
+is ($cgi->add_mime_type (), undef, 'Undefined mime type');
+
 $cgi->add_mime_type ('application/json');
 @mimetypes = $cgi->get_mime_types ();
 is ($#mimetypes, 2, 'added a mime type');
@@ -99,6 +112,10 @@ is_deeply (\@mimetypes, [ 'application/json', 'text/plain' ],
 	'Correct mime types after removal');
 
 # Filename tests
+$cgi->add_timestamp (-1);
+is ($cgi->{timestamp}, 1, 'Timestamp < 0');
+$cgi->add_timestamp (3);
+is ($cgi->{timestamp}, 1, 'Timestamp > 3');
 
 $cgi->add_timestamp (0);
 is ($cgi->{timestamp}, 0, 'timestamp is zero');
@@ -134,10 +151,16 @@ like ($form->{'does_not_exist_gif'}, qr/^[0-9]+__does_not_exist\.gif/, 'Second f
 like ($form->{'100;100_gif'}, qr/^100_100\.gif/, 'Third file');
 like ($form->{'300x300_gif'}, qr/^[0-9]+__300x300\.gif/, 'Fourth file');
 
-# Buffer size setting tests
 
+# Buffer size setting tests
 is ($cgi->set_buffer_size(1), 256, 'Buffer size too low');
 is ($cgi->set_buffer_size(1000000), $ENV{CONTENT_LENGTH}, 'Buffer size too high');
+
+# Tests without CONTENT_LENGTH
+my $tmpcl = $ENV{CONTENT_LENGTH};
+$ENV{CONTENT_LENGTH} = 0;
+is ($cgi->set_buffer_size(1), 0, 'Buffer size unset without CONTENT_LENGTH');
+$ENV{CONTENT_LENGTH} = $tmpcl;
 
 # File type tests
 
@@ -192,13 +215,46 @@ for my $buf_size (256 .. 1500) {
 	}
 }
 
-$cgi->deny_uploads (1);
+is ($cgi->deny_uploads (), 0, 'Set deny_uploads undef');
+is ($cgi->deny_uploads (0), 0, 'Set deny_uploads false');
+
+is ($cgi->deny_uploads (1), 1, 'Set deny_uploads true');
 ($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
 is ($cgi->is_error, 1, "Upload successfully denied");
 
+#$datafile = 't/post_text.txt';
+#$ENV{CONTENT_LENGTH}  = (stat ($datafile))[7];
+#($cgi, $form) = post_data ($datafile);
+#is ($cgi->is_error, 1, 'Parsing bad data with POST');
+#warn $cgi->get_error_message if $cgi->is_error;
+##use Data::Dumper;
+##warn Dumper ($form);
 
+# Upload but no files
+$datafile = 't/upload_no_files.txt';
+$ENV{CONTENT_LENGTH}  = (stat ($datafile))[7];
+($cgi, $form) = post_data ($datafile);
+is ($cgi->is_error, 0, 'Parsing upload data with no files');
+
+# Special case where the file uploads appear not last
+$datafile = 't/upload_no_trailing_files.txt';
+$ENV{CONTENT_LENGTH}  = (stat ($datafile))[7];
+($cgi, $form) = post_data ($datafile, $uploaddir);
+is ($cgi->is_error, 0, 'Parsing upload data with no trailling files');
+
+$datafile = 't/large_file_upload.txt';
+$ENV{CONTENT_LENGTH}  = (stat ($datafile))[7];
+$cgi->set_buffer_size (256);
+($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
+is ($cgi->is_error, 0, 'Parsing upload data with a large file');
+
+$ENV{CONTENT_LENGTH} += 500; 
+($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
+is ($cgi->is_error, 1, 'Parsing upload data with over large content length');
+
+# Special case where the file uploads appear not last
 sub post_data {
-	my ($datafile, $dir, $cgi) = @_;
+	my ($datafile, $dir, $cgi, $as_array) = @_;
 	local *STDIN;
 	open STDIN, '<', $datafile
 		or die "Cannot open test file $datafile: $!";
@@ -206,6 +262,11 @@ sub post_data {
 	$cgi ||= CGI::Lite->new;
 	$cgi->set_platform ('DOS') if $^O eq 'MSWin32';
 	$cgi->set_directory ($dir);
+	if ($as_array) {
+		my %form = $cgi->parse_new_form_data;
+		close STDIN;
+		return ($cgi, \%form);
+	}
 	my $form = $cgi->parse_new_form_data;
 	close STDIN;
 	return ($cgi, $form);

@@ -46,5 +46,17 @@ are handled by CGI::Lite.
 </p>
 <p><b>It is not intended for any other purpose.</b></p>
 
+--`!"$%^&*()-+[]{}'@.?~#|aaa
+Content-Disposition: form-data; name="html_notype"; filename="notype.html"
+Content-Length: 212
+
+<h1>This is a test of an HTML document</h1>
+<p>
+It has several lines of text,
+and can be used to test how the EOL characters
+are handled by CGI::Lite.
+</p>
+<p><b>It is not intended for any other purpose.</b></p>
+
 --`!"$%^&*()-+[]{}'@.?~#|aaa--
 

@@ -97,6 +97,10 @@ Here are the methods you can use to process your forms and cookies:
 
 =over 4
 
+=item B<new>
+
+The constructor takes no arguments and returns a new CGI::Lite object.
+
 =item B<parse_form_data>
 
 This will handle the following types of requests: GET, HEAD and POST.
@@ -128,7 +132,7 @@ the value contains either the path to the file, or the filehandle
 =item B<parse_new_form_data>
 
 As for parse_form_data, but clears the CGI object state before processing 
-the request. This is useful in persistant application (e.g. FCGI), where
+the request. This is useful in persistent application (e.g. FCGI), where
 the CGI object is reused for multiple requests. e.g.
 
 	$CGI = CGI::Lite->new ();
@@ -141,7 +145,11 @@ the CGI object is reused for multiple requests. e.g.
 =item B<parse_cookies>
 
 Decodes and parses cookies passed by the browser. This method works in 
-much the same manner as B<parse_form_data>. 
+much the same manner as B<parse_form_data>. As these two data sources
+are treated the same internally, users who wish to extract form and
+cookie data separately might find it easiest to call
+parse_cookies first and then parse_new_form_data in order to retrieve
+two distinct hashes (or hashrefs).
 
 =item B<is_error>
 
@@ -249,6 +257,12 @@ I<Return Value>
 
 Returns the list, either as a reference or an actual list, of the 
 MIME types for which EOL translation is performed.
+
+=item B<get_upload_type>
+
+Returns the MIME type of uploaded data with the named argument as a scalar
+or undef if the argument does not exist or has no type. This previously
+undocumented function was named print_mime_type prior to version 3.0.
 
 =item B<set_file_type>
 
@@ -514,7 +528,7 @@ use warnings;
 
 require 5.6.0;
 
-use Symbol;
+use Symbol; # For _create_handles
 
 ##++
 ## Global Variables
@@ -536,8 +550,7 @@ sub new
     my $class = shift;
 
     my $self = {
-	        multipart_dir    =>    undef,
-	        default_dir      =>    '/tmp',
+	        multipart_dir    =>    '/tmp',
 	        file_type        =>    'name',
 	        platform         =>    'Unix',
 	        buffer_size      =>    1024,
@@ -595,9 +608,10 @@ sub set_directory
 {
     my ($self, $directory) = @_;
 
+	return 0 unless $directory;
     stat ($directory);
 
-    if ( (-d _) && (-e _) && (-r _) && (-w _) ) {
+    if ( (-d _) && (-r _) && (-w _) ) {
 	$self->{multipart_dir} = $directory;
 	return (1);
 
@@ -666,7 +680,7 @@ sub add_timestamp
 {
     my ($self, $value) = @_;
 
-    if ( ($value < 0) || ($value > 2) ) {
+    unless ($value == 0 or $value == 1 or $value == 2) {
 	$self->{timestamp} = 1;
     } else {
 	$self->{timestamp} = $value;
@@ -738,11 +752,6 @@ sub parse_form_data
     if ($request_method =~ /^(get|head)$/i) {
 
 		$query_string = $ENV{QUERY_STRING};
-
-		# If for some reason this has been called as a class method instead
-		# of an object method and there's no query string, then give up now.
-		return unless ($query_string or ref $self);
-
 		$self->_decode_url_encoded_data (\$query_string, 'form');
 
 		return wantarray ?
@@ -836,7 +845,7 @@ sub print_data
     }
 }
 
-sub print_mime_type
+sub get_upload_type
 {
     my ($self, $field) = @_;
 
@@ -874,7 +883,8 @@ sub create_variables
     $package = $self->_determine_package;
 
     while (($key, $value) = each %$hash) {
-	${"$package\:\:$key"} = $value;
+		my $this = Symbol::qualify_to_ref ($key, $package);
+		$$$this = $value;
     }
 }
 
@@ -914,7 +924,9 @@ sub browser_escape
     my ($self, $string) = @_;
 
 	unless (ref ($self) eq 'CGI::Lite') {
-		warn "Non-method use of browser_escape is deprecated";
+		my @rep = caller;
+		warn "Non-method use of browser_escape is deprecated " .
+			"in $rep[0] at line $rep[2] of $rep[1]\n";
 		$string = $self;
 	}
     $string =~ s/([<&"#%>])/sprintf ('&#%d;', ord ($1))/ge;
@@ -927,7 +939,9 @@ sub url_encode
     my ($self, $string) = @_;
 
 	unless (ref ($self) eq 'CGI::Lite') {
-		warn "Non-method use of url_encode is deprecated";
+		my @rep = caller;
+		warn "Non-method use of url_encode is deprecated " .
+			"in $rep[0] at line $rep[2] of $rep[1]\n";
 		$string = $self;
 	}
 
@@ -942,7 +956,9 @@ sub url_decode
     my ($self, $string) = @_;
 
 	unless (ref ($self) eq 'CGI::Lite') {
-		warn "Non-method use of url_decode is deprecated";
+		my @rep = caller;
+		warn "Non-method use of url_decode is deprecated " .
+			"in $rep[0] at line $rep[2] of $rep[1]\n";
 		$string = $self;
 	}
 
@@ -957,7 +973,9 @@ sub is_dangerous
     my ($self, $string) = @_;
 
 	unless (ref ($self) eq 'CGI::Lite') {
-		warn "Non-method use of is_dangerous is deprecated";
+		my @rep = caller;
+		warn "Non-method use of is_dangerous is deprecated " .
+			"in $rep[0] at line $rep[2] of $rep[1]\n";
 		$string = $self;
 	}
 
@@ -976,9 +994,6 @@ sub _error
 {
     my ($self, $message) = @_;
 
-	# Skip if we've been called as a class method
-	# because $self is not a hashref in such cases
-	return unless ref $self;
     $self->{error_status}  = 1;
     $self->{error_message} = $message;
 }
@@ -1046,7 +1061,7 @@ sub _decode_url_encoded_data
 		}
     }
 
-    $self->_error ($@) if $@;
+    return;
 }
 
 ##++
@@ -1071,7 +1086,7 @@ sub _parse_multipart_data
     $byte_count  = 0;
     $platform    = $self->{platform};
     $eol         = $self->{eol}->{$platform};
-    $directory   = $self->{multipart_dir} || $self->{default_dir};
+    $directory   = $self->{multipart_dir};
 
     while (1) {
 	if ( ($byte_count < $total_bytes) &&
@@ -1186,7 +1201,7 @@ sub _parse_multipart_data
         }
     }
 
-    close ($handle) if (fileno ($handle));
+    close ($handle) if ($handle and fileno ($handle));
 
 	}; # End of eval
 
@@ -1240,7 +1255,7 @@ sub _get_file_name
     } elsif ($self->{timestamp} == 1) {
 	return $timestamp;
 	
-    } elsif ($self->{timestamp} == 2) {
+    } else { # $self->{timestamp} must be 2
 	$path = join ($self->{file}->{$platform}, $directory, $filename);
 	
 	return (-e $path) ? $timestamp : $filename;
@@ -1257,7 +1272,7 @@ sub _create_handles
 	while (($name, $path) = each %$files) {
 		$handle = Symbol::qualify_to_ref ($name, $package);
 		open ($handle, '<', $path)
-			or $self->_error ("Can't read file: $path!");
+			or $self->_error ("Can't read file: $path! $!");
 
 		push (@{ $self->{all_handles} }, $handle);
 	}
