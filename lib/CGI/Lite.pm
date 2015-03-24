@@ -9,7 +9,7 @@
 ##     providing that the above copyright notice and this permission
 ##     appear in all copies and in supporting documentation.
 ##
-##     Changes in versions 2.03 and newer copyright (c) 2014 Pete Houston
+##     Changes in versions 2.03 and newer copyright (c) 2014-2015 Pete Houston
 ##--
 
 ###############################################################################
@@ -22,78 +22,31 @@ CGI::Lite - Process and decode WWW forms and cookies
 
     use CGI::Lite ();
 
-    $cgi = CGI::Lite->new ();
+    my $cgi = CGI::Lite->new ();
 
-    $cgi->set_platform ($platform);
-    
-        # where $platform can be one of (case insensitive):
-        # Unix, Windows, Windows95, DOS, NT, PC, Mac or Macintosh
+    $cgi->set_directory ('/some/dir') or die "Directory cannot be set.\n";
+    $cgi->add_mime_type ('text/csv');
 
-    $cgi->set_file_type ($fh);
-	
-        # where $fh is one of 'handle' or 'file'
+    my $cookies = $cgi->parse_cookies;
+    my $form    = $cgi->parse_new_form_data;
 
-    $cgi->add_timestamp ($tsflag);	
-
-        # where $tsflag takes one of these values
-        #       0 = no timestamp
-        #       1 = timestamp all files (default)
-        #       2 = timestamp only if file exists
-
-    $cgi->filter_filename (\&subroutine);
-
-    $size = $cgi->set_buffer_size ($some_buffer_size);
-
-    $status = $cgi->set_directory ('/some/dir');
-    $cgi->set_directory ('/some/dir') or die "Directory doesn't exist.\n";
-
-    $cgi->close_all_files;
-
-    $cgi->add_mime_type ('application/mac-binhex40');
-    $status = $cgi->remove_mime_type ('application/mac-binhex40');
-    @list = $cgi->get_mime_types;
-
-    $form = $cgi->parse_form_data;
-    %form = $cgi->parse_form_data;
-
-    # or
-
-    $form = $cgi->parse_form_data ('GET', 'HEAD' or 'POST');
-
-    $cookies = $cgi->parse_cookies;
-    %cookies = $cgi->parse_cookies;
-
-    $status  = $cgi->is_error;
-    $message = $cgi->get_error_message;
-
-    $cgi->return_error ('error 1', 'error 2', ...);
-
-    $keys = $cgi->get_ordered_keys;
-    @keys = $cgi->get_ordered_keys;
-
-    $cgi->print_data;
-
-    $new_string = $cgi->wrap_textarea ($string, $length);
-
-    @all_values = $cgi->get_multiple_values ($reference);
-
-    $escaped_string = $cgi->browser_escape ($string);
-
-    $encoded_string = $cgi->url_encode ($string);
-    $decoded_string = $cgi->url_decode ($string);
-
-    $status = $cgi->is_dangerous ($string);
+    my $status  = $cgi->is_error;
+	if ($status) {
+    	my $message = $cgi->get_error_message;
+		die $message;
+	}
 
 =head1 DESCRIPTION
 
-You can use this module to decode form and query information,
-including file uploads, as well as cookies in a very simple 
-manner; you need not concern yourself with the actual details 
-behind the decoding process. 
+This module can be used to decode form data, query strings, file uploads
+and cookies in a very simple manner.
+
+It has no dependencies and is therefore relatively fast to
+instantiate. This makes it well suited to a non-persistent CGI scenario.
 
 =head1 METHODS
 
-Here are the methods you can use to process your forms and cookies:
+Here are the methods used to process the forms and cookies:
 
 =over 4
 
@@ -103,12 +56,14 @@ The constructor takes no arguments and returns a new CGI::Lite object.
 
 =item B<parse_form_data>
 
-This will handle the following types of requests: GET, HEAD and POST.
+This handles the following types of requests: GET, HEAD and POST.
 By default, CGI::Lite uses the environment variable REQUEST_METHOD to 
 determine the manner in which the query/form information should be 
-decoded. However, you are also allowed to pass a valid request 
-method to this function to force CGI::Lite to decode the information in 
+decoded. However, it may also be passed a valid request 
+method as a scalar string to force CGI::Lite to decode the information in 
 a specific manner. 
+
+	my $params = $cgi->parse_form_data ('GET');
 
 For multipart/form-data, uploaded files are stored in the user selected 
 directory (see B<set_directory>). If timestamp mode is on (see 
@@ -119,10 +74,8 @@ B<add_timestamp>), the files are named in the following format:
 where the filename is specified in the "Content-disposition" header.
 I<NOTE:>, the browser URL encodes the name of the file. This module
 makes I<no> effort to decode the information for security reasons.
-However, you can do so by creating a subroutine and then using
+However, this can be achieved by creating a subroutine and then using
 the B<filter_filename> method.
-
-I<Return Value>
 
 Returns either a hash or a reference to the hash, which contains
 all of the key/value pairs. For fields that contain file information,
@@ -132,10 +85,10 @@ the value contains either the path to the file, or the filehandle
 =item B<parse_new_form_data>
 
 As for parse_form_data, but clears the CGI object state before processing 
-the request. This is useful in persistent application (e.g. FCGI), where
+the request. This is useful in persistent applications (e.g. FCGI), where
 the CGI object is reused for multiple requests. e.g.
 
-	$CGI = CGI::Lite->new ();
+	my $CGI = CGI::Lite->new ();
 	while (FCGI::accept > 0)
 	{
 		my $query = $CGI->parse_new_form_data ();
@@ -153,45 +106,43 @@ two distinct hashes (or hashrefs).
 
 =item B<is_error>
 
-You can use this
-method to check for any potential errors after you've called either
-B<parse_form_data> or B<parse_cookies>.
+This method is used to check for any potential errors after calling
+either B<parse_form_data> or B<parse_cookies>.
 
-I<Return Value>
+	my $form = $cgi->parse_form_data ();
+	my $went_wrong = $cgi->is_error ();
 
-    0 Success
-    1 Failure
+Returns 0 if there is no error, 1 otherwise.
 
 =item B<get_error_message>
 
-If an error occurs when parsing form/query information or cookies, you
-can use this method to retrieve the error message. Remember, you can
-check for errors by calling the B<is_error> method.
+If an error occurs when parsing form/query information or cookies, this
+method may be used to retrieve the error message. Remember, the presence
+of any errors can be checked by calling the B<is_error> method.
 
-I<Return Value>
+	my $msg = $cgi->get_error_message ();
 
-The error message as a plain text string.
-
-=item B<return_error>
-
-You can use this method to print errors to standard output (ie. as part of
-the HTTP response) and exit. This method is deprecated as of version 3.0.
+Returns the error message as a plain text string.
 
 =item B<set_platform>
 
-You can use this method to set the platform on which your Web server
-is running. CGI::Lite uses this information to translate end-of-line 
+This method is used to set the platform on which the web server is
+running. CGI::Lite uses this information to translate end-of-line
 (EOL) characters for uploaded files (see the B<add_mime_type> and
-B<remove_mime_type> methods) so that they display properly on that
-platform.
+B<remove_mime_type> methods) so that they are accounted for properly on
+that platform.
 
-You can specify either (case insensitive):
+    $cgi->set_platform ($platform);
+    
+$platform can be any of (case insensitive):
 
     Unix                                  EOL: \012      = \n
     Windows, Windows95, DOS, NT, PC       EOL: \015\012  = \r\n
     Mac or Macintosh                      EOL: \015      = \r
 
 "Unix" is the default.
+
+Returns undef.
 
 =item B<set_size_limit>
 
@@ -200,98 +151,118 @@ this method with that size as the sole argument. A size of zero
 effectively disables POST requests. To specify an unlimited size (the
 default) use an argument of -1.
 
-Returns: the new value if provided, otherwise the existing value.
+	my $size_limit = $cgi->set_size_limit (10_000_000);
+
+Returns the new value if provided, otherwise the existing value.
 
 =item B<deny_uploads>
 
 To prevent any file uploads simply call this method with an argument of
 1. To enable them again, use an argument of zero.
 
-Returns: the new value if provided, otherwise the existing value.
+	my $deny_uploads = $cgi->deny_uploads (1);
+
+Returns the new value if provided, otherwise the existing value.
 
 =item B<set_directory>
 
 Used to set the directory where the uploaded files will be stored 
 (only applies to the I<multipart/form-data> encoding scheme).
 
-This function should be called I<before> you call B<parse_form_data>, 
+	my $tmpdir = '/some/dir';
+	$cgi->set_directory ($tmpdir) or
+		die "Directory $tmpdir cannot be used.\n";
+
+This function should be called I<before> B<parse_form_data>, 
 or else the directory defaults to "/tmp". If the application cannot 
 write to the directory for whatever reason, an error status is returned.
 
-I<Return Value>
-
-    0  Failure
-    1  Success
+Returns 0 on error, 1 otherwise.
 
 =item B<close_all_files>
 
+	$cgi->close_all_files;
+
 All uploaded files that are opened as a result of calling B<set_file_type>
 with the "handle" argument can be closed in one shot by calling this
-method.
+method which takes no arguments and returns undef.
 
 =item B<add_mime_type>
 
 By default, EOL characters are translated for all uploaded files
-with specific MIME types (i.e text/plain, text/html, etc.). You
-can use this method to add to the list of MIME types. For example,
+with specific MIME types (i.e. text/plain, text/html, etc.).
+This method can be used to add to the list of MIME types. For example,
 if you want CGI::Lite to translate EOL characters for uploaded
 files of I<application/mac-binhex40>, then you would do this:
 
     $cgi->add_mime_type ('application/mac-binhex40');
 
+Returns 1 if this mime type is newly added, 0 otherwise.
+
 =item B<remove_mime_type>
 
-This method is the converse of B<add_mime_type>. It allows you to 
-remove a particular MIME type. For example, if you do not want 
-CGI::Lite to translate EOL characters for uploaded files of I<text/html>, 
+This method is the converse of B<add_mime_type>. It allows for the
+removal of a particular MIME type. For example, if you do not want 
+CGI::Lite to translate EOL characters for uploaded files of type I<text/html>, 
 then you would do this:
 
     $cgi->remove_mime_type ('text/html');
 
-I<Return Value>
-
-    0  Failure
-    1  Success
+Returns 1 if this mime type is newly deleted, 0 otherwise.
 
 =item B<get_mime_types>
 
-Returns the list, either as a reference or an actual list, of the 
+Returns the list of the 
 MIME types for which EOL translation is performed.
+
+	my @mimelist = $cgi->get_mime_types ();
 
 =item B<get_upload_type>
 
-Returns the MIME type of uploaded data with the named argument as a scalar
-or undef if the argument does not exist or has no type. This previously
-undocumented function was named print_mime_type prior to version 3.0.
+Returns the MIME type of uploaded data. Takes the field name as a scalar
+argument. This previously undocumented function was named print_mime_type
+prior to version 3.0.
+
+	my $this_type = $cgi->get_upload_type ($field);
+
+Returns the MIME type as a scalar string or undef if the argument does
+not exist or has no type.
 
 =item B<set_file_type>
 
-The I<names> of uploaded files are returned by default, when you call
-the B<parse_form_data> method. But,  if pass the string "handle" to this 
-method, the I<handles> to the files are returned. However, the name
-of the handle corresponds to the filename.
+The I<names> of uploaded files are returned by default when
+the B<parse_form_data> method is called . But if this method is passed the string "handle" as its argument beforehand then
+the I<handles> to the files are returned instead. However, the name
+of each handle still corresponds to the filename.
 
-This function should be called I<before> you call B<parse_form_data>, or 
-else it will not work.
+	# $fh has been set to one of 'handle' or 'file'
+	$cgi->set_file_type ($fh);
+
+This function should be called I<before> any call to B<parse_form_data>, or 
+else it will have no effect.
 
 =item B<add_timestamp>
 
 By default, a timestamp is added to the front of uploaded files. 
-However, you have the option of completely turning off timestamp mode
+However, there is the option of completely turning off timestamp mode
 (value 0), or adding a timestamp only for existing files (value 2).
+
+	$cgi->add_timestamp ($tsflag);	
+	# where $tsflag takes one of these values
+	#       0 = no timestamp
+	#       1 = timestamp all files (default)
+	#       2 = timestamp only if file exists
 
 =item B<filter_filename>
 
-You can use this method to change the manner in which uploaded
+This method is used to change the manner in which uploaded
 files are named. For example, if you want uploaded filenames
 to be all upper case, you can use the following code:
 
     $cgi->filter_filename (\&make_uppercase);
     $cgi->parse_form_data;
 
-    .
-    .
-    .
+    # ...
 
     sub make_uppercase
     {
@@ -301,134 +272,185 @@ to be all upper case, you can use the following code:
         return $file;
     }
 
+This method is perhaps best used to sanitise filenames for a specific
+O/S or filesystem e.g. by removing spaces or leading hyphens, etc.
+
 =item B<set_buffer_size>
 
-This method allows you to set the buffer size when dealing with multipart 
-form data. However, the I<actual> buffer size that the algorithm uses 
-I<can> be up to 3x the value you specify. This ensures that boundary 
-strings are not "split" between multiple reads. So, take this into 
-consideration when setting the buffer size.
+This method allows fine-grained control of the buffer size used internally
+when dealing with multipart form data. However, the I<actual> buffer
+size that the algorithm uses I<can> be up to 3x the value specified
+as the argument. This ensures that boundary strings are not "split"
+between multiple reads. So, take this into consideration when setting
+the buffer size.
 
-You cannot set a buffer size below 256 bytes and above the total amount 
+    my $size = $cgi->set_buffer_size (4096);
+
+The buffer size may not be set below 256 bytes nor above the total amount 
 of multipart form data. The default value is 1024 bytes. 
 
-I<Return Value>
-
-The buffer size.
+Returns the buffer size.
 
 =item B<get_ordered_keys>
 
 Returns either a reference to an array or an array itself consisting
 of the form fields/cookies in the order they were parsed.
 
-I<Return Value>
-
-Ordered keys.
+    my $keys = $cgi->get_ordered_keys;
+    my @keys = $cgi->get_ordered_keys;
 
 =item B<print_data>
 
 Displays all the key/value pairs (either form data or cookie information)
-in a ordered fashion. The deprecated methods B<print_form_data> and
-B<print_cookie_data> have been removed in version 3.0.
+in an ordered fashion to standard output. It is mainly useful for
+debugging. There are no arguments and no return values.
 
 =item B<wrap_textarea>
 
-You can use this function to "wrap" a long string into one that is 
-separated by a combination of carriage return and newline (see 
-B<set_platform>) at fixed lengths.  The two arguments that you need to 
-pass to this method are the string and the length at which you want the 
-line separator added.
+This is a method to wrap a long string into one that is separated by EOL
+characters (see B<set_platform>) at fixed lengths.  The two arguments
+to be passed to this method are the string and the length at which the
+line separator is to be added.
 
-I<Return Value>
+    my $new_string = $cgi->wrap_textarea ($string, $length);
 
-The modified string.
+Returns the modified string.
 
 =item B<get_multiple_values>
 
-One of the major changes to this module as of v1.7 is that multiple
-values for a single key are returned as an reference to an array, and 
-I<not> as a string delimited by the null character ("\0"). You can use 
-this function to return the actual array. And if you pass a scalar 
-value to this method, it will simply return that value.
+The values returned by the parsing methods in this module for multiple
+fields with the same name are given as array references. This utility
+method exists to convert either a scalar value or an array reference
+into a list thus removing the need for the user to determine whether the
+returned value for any field is a reference or a scalar.
 
-There was no way I could make this backward compatible with versions
-older than 1.7. I apologize!
+	@all_values = $cgi->get_multiple_values ($reference);
 
-I<Return Value>
+It is only provided as a convenience to the user and is not used
+internally by the module itself.
 
-Array consisting of the multiple values.
-
-=item B<create_variables>
-
-B<This method is deprecated as of version 3.0.> It runs contrary to the
-principles of structured programming and has really nothing to do with
-CGI form or cookie handling. It will be removed entirely in later
-versions.
-
-Sometimes, it may be thought convenient to have scalar variables that
-represent the various keys in a hash. You can use this method to do
-just that.  Say you have a hash like the following:
-
-    %form = ('name'   => 'alan wells',
-	     'sport'  => 'track and field',
-	     'events' => '100m');
-
-If you call this method in the following manner:
-
-    $cgi->create_variables (\%hash);
-
-it will create three scalar variables: $name, $sport and $events. 
+Returns a list consisting of the multiple values.
 
 =item B<browser_escape>
 
-Certain characters have special significance to the browser. These
-characters include: "<" and ">". If you want to display these "special"
-characters, you need to escape them using the following notation:
+Certain characters have special significance within HTML. These
+characters are: <, >, &, ", # and %. To display these "special"
+characters, they can be escaped using the following notation "&#NNN;"
+where NNN is their ASCII code.  This utility method does just that.
 
-    &#ascii;
+    $escaped_string = $cgi->browser_escape ($string);
 
-This method does just that.
-
-I<Return Value>
-
-Escaped string.
+Returns the escaped string.
 
 =item B<url_encode>
 
-This method will URL encode a string that you pass it. You can use this
-to encode any data that you wish to pass as a query string to a CGI
-application.
+This method will URL-encode a string passed as its argument. It may be
+used to encode any data to be passed as a query string to a CGI
+application, for example.
 
-I<Return Value>
+    $encoded_string = $cgi->url_encode ($string);
 
-URL encoded string.
+Returns the URL-encoded string.
 
 =item B<url_decode>
 
-You can use this method to URL decode a string. 
+This method is used to URL-decode a string. 
 
-I<Return Value>
+    $decoded_string = $cgi->url_decode ($string);
 
-URL decoded string.
+Returns the URL-decoded string.
 
 =item B<is_dangerous>
 
 This method checks for the existence of dangerous meta-characters.
 
-I<Return Value>
+	$status = $cgi->is_dangerous ($string);
 
-    0 Safe
-    1 Dangerous
+Returns 1 if such characters are found, 0 otherwise.
+
+=back
+
+=head2 Deprecated methods
+
+The following methods and subroutines are deprecated. Please do not use
+them in new code and consider excising them from old code. They will be
+removed in a future release.
+
+=over 4
+
+=item B<return_error>
+
+    $cgi->return_error ('error 1', 'error 2', 'error 3');
+
+You can use this method to print errors to standard output (ie. as part of
+the HTTP response) and exit. B<This method is deprecated as of version 3.0.>
+The same functionality can be achieved with:
+
+	print ('error 1', 'error 2', 'error 3');
+	exit 1;
+
+=item B<create_variables>
+
+B<This method is deprecated as of version 3.0.> It runs contrary to the
+principles of structured programming and has really nothing to do with
+CGI form or cookie handling. It is retained here for backwards
+compatibility but will be removed entirely in later versions.
+
+    %form = ('name'   => 'alan wells',
+	     'sport'  => 'track and field',
+	     'events' => '100m');
+
+    $cgi->create_variables (\%hash);
+
+This converts a hash ref into scalars named for its keys and this
+example will create three scalar variables: $name, $sport and $events. 
+
+=back
+
+=head2 Obsolete methods/subroutines
+
+The following methods and subroutines were deprecated in the 2.x branch
+and have now been removed entirely from the module.
+
+=over 4
 
 =item B<escape_dangerous_chars>
 
-The use of this function has been strongly discouraged for more than a
+The use of this subroutine had been strongly discouraged for more than a
 decade (See
 L<https://web.archive.org/web/20100627014535/http://use.perl.org/~cbrooks/journal/10542>
 and L<http://www.securityfocus.com/archive/1/311414> for an
 advisory by Ronald F. Guilmette.) It has been removed as of version 3.0.
 
+=item B<print_form_data>
+
+Use B<print_data> instead.
+
+=item B<print_cookie_data>
+
+Use B<print_data> instead.
+
 =back
+
+Compatibility note: in 2.x and older versions the following were to be used as
+subroutines rather than methods:
+
+=over 4
+
+=item browser_escape
+
+=item url_encode
+
+=item url_decode
+
+=item is_dangerous
+
+=back
+
+They will still work as such and are still exported
+by default. Users are encouraged to migrate to the new method calls
+instead as both the export and subroutine interface may be retired in
+future. Non-method use will trigger a warning.
 
 =head1 VERSIONS
 
@@ -437,15 +459,13 @@ Perl back to 5.002 for a very long time. Such stability is a welcome
 attribute but it restricts the code by disallowing access to features
 introduced into the language since 1996.
 
-With this in mind, there are two maintained branches of this module
-going forwards. The 2.x branch will retain the backwards compatibility
-but will not have any new features introduced. Changes to this legacy branch
-will be bug fixes only. The new 3.x branch
-will be the main release and will require a more modern perl (version
-still to be determined but 5.6.0 would be the bare minumum). The 3.x
-branch will have new features and will remove some of the legacy code
-such as the B<print_form_data> method which has been deprecated for more
-than a decade.
+With this in mind, there are two maintained branches of this module going
+forwards. The 2.x branch will retain the backwards compatibility but
+will not have any new features introduced. Changes to this legacy branch
+will be bug fixes only. The new 3.x branch will be the main release and
+will require a more modern perl (5.6.0 is now the bare minimum). The
+3.x branch has new features and has removed some of the legacy code
+including some methods which had been deprecated for more than a decade.
 
 Requests for new features in the 3.x branch should be made via
 the request tracker at L<https://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lite>
@@ -510,7 +530,7 @@ Smylers, Andreas, Ben and Shishir.
  providing that the above copyright notice and this permission
  appear in all copies and in supporting documentation.
 
-     Changes in versions 2.03 - present copyright 2014 by Pete Houston
+     Changes in versions 2.03 onwards are copyright 2014, 2015 by Pete Houston
 
 =head1 LICENCE
 
@@ -624,7 +644,10 @@ sub add_mime_type
 {
     my ($self, $mime_type) = @_;
 
-    $self->{convert}->{$mime_type} = 1 if ($mime_type);
+	if ($mime_type and not exists $self->{convert}->{$mime_type}) {
+		return $self->{convert}->{$mime_type} = 1;
+	}
+	return 0;
 }
 
 sub remove_mime_type
@@ -651,17 +674,13 @@ sub set_platform
 {
     my ($self, $platform) = @_;
 
+	return unless defined $platform;
     if ($platform =~ /^(?:PC|NT|Windows(?:95)?|DOS)/i) {
         $self->{platform} = 'PC';
-
     } elsif ($platform =~ /^Mac(?:intosh)?/i) {
-
-	## Should I check for NeXT here :-)
-
         $self->{platform} = 'Mac';
-
     } else {
-	$self->{platform} = 'Unix';
+		$self->{platform} = 'Unix';
     }
 }
 
