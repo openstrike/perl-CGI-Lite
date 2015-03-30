@@ -551,15 +551,15 @@ use warnings;
 
 require 5.6.0;
 
-use Symbol; # For _create_handles and create_variables
+use Symbol;    # For _create_handles and create_variables
 
 ##++
 ## Global Variables
 ##--
 
 BEGIN {
-	our @ISA     = 'Exporter';
-	our @EXPORT  = qw/browser_escape url_encode url_decode is_dangerous/;
+	our @ISA    = 'Exporter';
+	our @EXPORT = qw/browser_escape url_encode url_decode is_dangerous/;
 }
 
 our $VERSION = '2.99_01';
@@ -570,40 +570,40 @@ our $VERSION = '2.99_01';
 
 sub new
 {
-    my $class = shift;
+	my $class = shift;
 
-    my $self = {
-	        multipart_dir    =>    '/tmp',
-	        file_type        =>    'name',
-	        platform         =>    'Unix',
-	        buffer_size      =>    1024,
-	        timestamp        =>    1,
-		filter           =>    undef,
-	        web_data         =>    {},
-		ordered_keys     =>    [],
-		all_handles      =>    [],
-	        error_status     =>    0,
-	        error_message    =>    undef,
-		file_size_limit	 =>    2097152, # Unused as yet
-		size_limit       =>    -1,
-		deny_uploads     =>     0,
-	    };
+	my $self = {
+		multipart_dir   => '/tmp',
+		file_type       => 'name',
+		platform        => 'Unix',
+		buffer_size     => 1024,
+		timestamp       => 1,
+		filter          => undef,
+		web_data        => {},
+		ordered_keys    => [],
+		all_handles     => [],
+		error_status    => 0,
+		error_message   => undef,
+		file_size_limit => 2097152,    # Unused as yet
+		size_limit      => -1,
+		deny_uploads    => 0,
+	};
 
-    $self->{convert} = { 
-	                   'text/html'    => 1,
-	                   'text/plain'   => 1
-	               };
+	$self->{convert} = {
+		'text/html'  => 1,
+		'text/plain' => 1
+	};
 
-    $self->{file} = { Unix => '/',    Mac => ':',    PC => '\\'       };
-    $self->{eol}  = { Unix => "\012", Mac => "\015", PC => "\015\012" };
+	$self->{file} = {Unix => '/',    Mac => ':',    PC => '\\'};
+	$self->{eol}  = {Unix => "\012", Mac => "\015", PC => "\015\012"};
 
-    bless ($self, $class);
-    return $self;
+	bless ($self, $class);
+	return $self;
 }
 
-sub Version 
-{ 
-    return $VERSION;
+sub Version
+{
+	return $VERSION;
 }
 
 sub deny_uploads
@@ -629,23 +629,23 @@ sub set_size_limit
 
 sub set_directory
 {
-    my ($self, $directory) = @_;
+	my ($self, $directory) = @_;
 
 	return 0 unless $directory;
-    stat ($directory);
+	stat ($directory);
 
-    if ( (-d _) && (-r _) && (-w _) ) {
-	$self->{multipart_dir} = $directory;
-	return (1);
+	if ((-d _) && (-r _) && (-w _)) {
+		$self->{multipart_dir} = $directory;
+		return (1);
 
-    } else {
-	return (0);
-    }
+	} else {
+		return (0);
+	}
 }
 
 sub add_mime_type
 {
-    my ($self, $mime_type) = @_;
+	my ($self, $mime_type) = @_;
 
 	if ($mime_type and not exists $self->{convert}->{$mime_type}) {
 		return $self->{convert}->{$mime_type} = 1;
@@ -655,163 +655,161 @@ sub add_mime_type
 
 sub remove_mime_type
 {
-    my ($self, $mime_type) = @_;
+	my ($self, $mime_type) = @_;
 
-    if ($self->{convert}->{$mime_type}) {
-	delete $self->{convert}->{$mime_type};
-	return (1);
+	if ($self->{convert}->{$mime_type}) {
+		delete $self->{convert}->{$mime_type};
+		return (1);
 
-    } else {
-	return (0);
-    }
+	} else {
+		return (0);
+	}
 }
 
 sub get_mime_types
 {
-    my $self = shift;
+	my $self = shift;
 
-    return (sort keys %{ $self->{convert} });
+	return (sort keys %{$self->{convert}});
 }
 
 sub set_platform
 {
-    my ($self, $platform) = @_;
+	my ($self, $platform) = @_;
 
 	return unless defined $platform;
-    if ($platform =~ /^(?:PC|NT|Windows(?:95)?|DOS)/i) {
-        $self->{platform} = 'PC';
-    } elsif ($platform =~ /^Mac(?:intosh)?/i) {
-        $self->{platform} = 'Mac';
-    } else {
+	if ($platform =~ /^(?:PC|NT|Windows(?:95)?|DOS)/i) {
+		$self->{platform} = 'PC';
+	} elsif ($platform =~ /^Mac(?:intosh)?/i) {
+		$self->{platform} = 'Mac';
+	} else {
 		$self->{platform} = 'Unix';
-    }
+	}
 }
 
 sub set_file_type
 {
-    my ($self, $type) = @_;
+	my ($self, $type) = @_;
 
-    if ($type =~ /^handle$/i) {
-	$self->{file_type} = 'handle';
-    } else {
-	$self->{file_type} = 'name';
-    }
+	if ($type =~ /^handle$/i) {
+		$self->{file_type} = 'handle';
+	} else {
+		$self->{file_type} = 'name';
+	}
 }
 
 sub add_timestamp
 {
-    my ($self, $value) = @_;
+	my ($self, $value) = @_;
 
-    unless ($value == 0 or $value == 1 or $value == 2) {
-	$self->{timestamp} = 1;
-    } else {
-	$self->{timestamp} = $value;
-    }
+	unless ($value == 0 or $value == 1 or $value == 2) {
+		$self->{timestamp} = 1;
+	} else {
+		$self->{timestamp} = $value;
+	}
 }
 
 sub filter_filename
 {
-    my ($self, $subroutine) = @_;
+	my ($self, $subroutine) = @_;
 
-    $self->{filter} = $subroutine;
+	$self->{filter} = $subroutine;
 }
 
 sub set_buffer_size
 {
-    my ($self, $buffer_size) = @_;
-    my $content_length;
+	my ($self, $buffer_size) = @_;
+	my $content_length;
 
-    $content_length = $ENV{CONTENT_LENGTH} || return (0);
+	$content_length = $ENV{CONTENT_LENGTH} || return (0);
 
-    if ($buffer_size < 256) {
-	$self->{buffer_size} = 256;
-    } elsif ($buffer_size > $content_length) {
-	$self->{buffer_size} = $content_length;
-    } else {
-	$self->{buffer_size} = $buffer_size;
-    }
+	if ($buffer_size < 256) {
+		$self->{buffer_size} = 256;
+	} elsif ($buffer_size > $content_length) {
+		$self->{buffer_size} = $content_length;
+	} else {
+		$self->{buffer_size} = $buffer_size;
+	}
 
-    return ($self->{buffer_size});
+	return ($self->{buffer_size});
 }
 
 sub parse_new_form_data
-# Reset state before parsing (for persistant CGI objects, e.g. under FastCGI) 
+
+# Reset state before parsing (for persistant CGI objects, e.g. under FastCGI)
 # BDL
 {
 	my ($self, @param) = @_;
 
 	# close files (should happen anyway when 'all_handles' is cleared...)
-	$self->close_all_files();
+	$self->close_all_files ();
 
-	$self->{web_data}	= {};
-	$self->{ordered_keys} 	= [];
-	$self->{all_handles} 	= [];
-	$self->{error_status} 	= 0;
-	$self->{error_message} 	= undef;
+	$self->{web_data}      = {};
+	$self->{ordered_keys}  = [];
+	$self->{all_handles}   = [];
+	$self->{error_status}  = 0;
+	$self->{error_message} = undef;
 
-	$self->parse_form_data(@param);
+	$self->parse_form_data (@param);
 }
 
 sub parse_form_data
 {
-    my ($self, $user_request) = @_;
-    my ($request_method, $content_length, $content_type, $query_string,
+	my ($self, $user_request) = @_;
+	my ($request_method, $content_length, $content_type, $query_string,
 		$boundary, $post_data, @query_input);
 
 	# Force into object method
 	unless (ref ($self)) { $self = $self->new; }
-    $request_method = $user_request || $ENV{REQUEST_METHOD} || '';
-    $content_length = $ENV{CONTENT_LENGTH} || 0;
-    $content_type   = $ENV{CONTENT_TYPE};
+	$request_method = $user_request        || $ENV{REQUEST_METHOD} || '';
+	$content_length = $ENV{CONTENT_LENGTH} || 0;
+	$content_type   = $ENV{CONTENT_TYPE};
 
 	# If we've set a size limit, check that it has not been exceeded
 	if ($self->{size_limit} > -1 and $content_length > $self->{size_limit}) {
-		$self->_error ("Content lenth $content_length exceeds limit of " .
-		 	$self->{size_limit});
+		$self->_error ("Content lenth $content_length exceeds limit of "
+			  . $self->{size_limit});
 		return;
 	}
 
-    if ($request_method =~ /^(get|head)$/i) {
+	if ($request_method =~ /^(get|head)$/i) {
 
 		$query_string = $ENV{QUERY_STRING};
 		$self->_decode_url_encoded_data (\$query_string, 'form');
 
-		return wantarray ?
-	    	%{ $self->{web_data} } : $self->{web_data};
+		return wantarray ? %{$self->{web_data}} : $self->{web_data};
 
-    } elsif ($request_method =~ /^post$/i) {
+	} elsif ($request_method =~ /^post$/i) {
 
-		if (!$content_type || 
-	    	($content_type =~ /^application\/x-www-form-urlencoded/)) {
+		if (!$content_type
+			|| ($content_type =~ /^application\/x-www-form-urlencoded/)) {
 
-	    	read (STDIN, $post_data, $content_length);
-	    	$self->_decode_url_encoded_data (\$post_data, 'form');
+			read (STDIN, $post_data, $content_length);
+			$self->_decode_url_encoded_data (\$post_data, 'form');
 
-	    	return wantarray ? 
-				%{ $self->{web_data} } : $self->{web_data};
+			return wantarray ? %{$self->{web_data}} : $self->{web_data};
 
 		} elsif ($content_type =~ /multipart\/form-data/) {
 
 			if ($self->{deny_uploads}) {
-				$self->_error ("multipart/form-data unacceptable when ".
-					"deny_uploads is set");
+				$self->_error ("multipart/form-data unacceptable when "
+					  . "deny_uploads is set");
 				return;
 			}
-	    	($boundary) = $content_type =~ /boundary=(\S+)$/;
-	    	$self->_parse_multipart_data ($content_length, $boundary);
+			($boundary) = $content_type =~ /boundary=(\S+)$/;
+			$self->_parse_multipart_data ($content_length, $boundary);
 
-	    	return wantarray ? 
-				%{ $self->{web_data} } : $self->{web_data};
+			return wantarray ? %{$self->{web_data}} : $self->{web_data};
 
 		} else {
-	    	$self->_error ('Invalid content type!');
+			$self->_error ('Invalid content type!');
 		}
 
-    } else {
+	} else {
 
 		##++
 		##  Got the idea of interactive debugging from CGI.pm, though it's
-        	##  handled a bit differently here. Thanks Lincoln!
+		##  handled a bit differently here. Thanks Lincoln!
 		##--
 
 		print "[ Reading query from standard input. Press ^D to stop! ]\n";
@@ -821,120 +819,117 @@ sub parse_form_data
 
 		$query_string = join ('&', @query_input);
 		$query_string =~ s/\\(.)/sprintf ('%%%02X', ord ($1))/eg;
- 
+
 		$self->_decode_url_encoded_data (\$query_string, 'form');
 
-		return wantarray ?
-	    	%{ $self->{web_data} } : $self->{web_data};
-    }
+		return wantarray ? %{$self->{web_data}} : $self->{web_data};
+	}
 }
 
 sub parse_cookies
 {
-    my $self = shift;
-    my $cookies;
+	my $self = shift;
+	my $cookies;
 
-    $cookies = $ENV{HTTP_COOKIE} || return;
+	$cookies = $ENV{HTTP_COOKIE} || return;
 
-    $self->_decode_url_encoded_data (\$cookies, 'cookies');
+	$self->_decode_url_encoded_data (\$cookies, 'cookies');
 
-    return wantarray ? 
-        %{ $self->{web_data} } : $self->{web_data};
+	return wantarray ? %{$self->{web_data}} : $self->{web_data};
 }
 
 sub get_ordered_keys
 {
-    my $self = shift;
+	my $self = shift;
 
-    return wantarray ?
-	@{ $self->{ordered_keys} } : $self->{ordered_keys};
+	return wantarray ? @{$self->{ordered_keys}} : $self->{ordered_keys};
 }
 
 sub print_data
 {
-    my $self = shift;
+	my $self = shift;
 
-    my $eol = $self->{eol}->{$self->{platform}};
+	my $eol = $self->{eol}->{$self->{platform}};
 
-    foreach my $key (@{ $self->{ordered_keys} }) {
-	my $value = $self->{web_data}->{$key};
+	foreach my $key (@{$self->{ordered_keys}}) {
+		my $value = $self->{web_data}->{$key};
 
-	if (ref $value) {
-	    print "$key = @$value$eol";
-	} else {
-	    print "$key = $value$eol";
+		if (ref $value) {
+			print "$key = @$value$eol";
+		} else {
+			print "$key = $value$eol";
+		}
 	}
-    }
 }
 
 sub get_upload_type
 {
-    my ($self, $field) = @_;
+	my ($self, $field) = @_;
 
-    return($self->{'mime_types'}->{$field});
+	return ($self->{'mime_types'}->{$field});
 }
 
 sub wrap_textarea
 {
-    my ($self, $string, $length) = @_;
-    my ($new_string, $platform, $eol);
+	my ($self, $string, $length) = @_;
+	my ($new_string, $platform, $eol);
 
-    $length     = 70 unless ($length);
-    $platform   = $self->{platform};
-    $eol        = $self->{eol}->{$platform};
-    $new_string = $string || return;
-	
-    $new_string =~ s/[\0\r]\n?/ /sg;
-    $new_string =~ s/(.{0,$length})\s/$1$eol/sg;
+	$length     = 70 unless ($length);
+	$platform   = $self->{platform};
+	$eol        = $self->{eol}->{$platform};
+	$new_string = $string || return;
 
-    return $new_string;
+	$new_string =~ s/[\0\r]\n?/ /sg;
+	$new_string =~ s/(.{0,$length})\s/$1$eol/sg;
+
+	return $new_string;
 }
 
 sub get_multiple_values
 {
-    my ($self, $array) = @_;
+	my ($self, $array) = @_;
 
-    return (ref $array) ? (@$array) : $array;
+	return (ref $array) ? (@$array) : $array;
 }
 
 sub create_variables
 {
-    my ($self, $hash) = @_;
-    my ($package, $key, $value);
-    
-    $package = $self->_determine_package;
+	my ($self, $hash) = @_;
+	my ($package, $key, $value);
 
-    while (($key, $value) = each %$hash) {
+	$package = $self->_determine_package;
+
+	while (($key, $value) = each %$hash) {
 		my $this = Symbol::qualify_to_ref ($key, $package);
 		$$$this = $value;
-    }
+	}
 }
 
 sub is_error
 {
-    my $self = shift;
+	my $self = shift;
 
-    if ($self->{error_status}) {
-	return (1);
-    } else {
-	return (0);
-    }
+	if ($self->{error_status}) {
+		return (1);
+	} else {
+		return (0);
+	}
 }
 
 sub get_error_message
 {
-    my $self = shift;
+	my $self = shift;
 
-    return $self->{error_message} if ($self->{error_message});
+	return $self->{error_message} if ($self->{error_message});
 }
 
 sub return_error
 {
-    my ($self, @messages) = @_;
+	my ($self, @messages) = @_;
 
-    print "@messages\n";
+	print "@messages\n";
 
-    exit (1);
+	exit (1);
 }
 
 ##++
@@ -943,69 +938,69 @@ sub return_error
 
 sub browser_escape
 {
-    my ($self, $string) = @_;
+	my ($self, $string) = @_;
 
 	unless (ref ($self) eq 'CGI::Lite') {
 		my @rep = caller;
-		warn "Non-method use of browser_escape is deprecated " .
-			"in $rep[0] at line $rep[2] of $rep[1]\n";
+		warn "Non-method use of browser_escape is deprecated "
+		  . "in $rep[0] at line $rep[2] of $rep[1]\n";
 		$string = $self;
 	}
-    $string =~ s/([<&"#%>])/sprintf ('&#%d;', ord ($1))/ge;
+	$string =~ s/([<&"#%>])/sprintf ('&#%d;', ord ($1))/ge;
 
-    return $string;
+	return $string;
 }
 
 sub url_encode
 {
-    my ($self, $string) = @_;
+	my ($self, $string) = @_;
 
 	unless (ref ($self) eq 'CGI::Lite') {
 		my @rep = caller;
-		warn "Non-method use of url_encode is deprecated " .
-			"in $rep[0] at line $rep[2] of $rep[1]\n";
+		warn "Non-method use of url_encode is deprecated "
+		  . "in $rep[0] at line $rep[2] of $rep[1]\n";
 		$string = $self;
 	}
 
-    $string =~ s/([^-.\w ])/sprintf('%%%02X', ord $1)/ge;
-    $string =~ tr/ /+/;
+	$string =~ s/([^-.\w ])/sprintf('%%%02X', ord $1)/ge;
+	$string =~ tr/ /+/;
 
-    return $string;
+	return $string;
 }
 
 sub url_decode
 {
-    my ($self, $string) = @_;
+	my ($self, $string) = @_;
 
 	unless (ref ($self) eq 'CGI::Lite') {
 		my @rep = caller;
-		warn "Non-method use of url_decode is deprecated " .
-			"in $rep[0] at line $rep[2] of $rep[1]\n";
+		warn "Non-method use of url_decode is deprecated "
+		  . "in $rep[0] at line $rep[2] of $rep[1]\n";
 		$string = $self;
 	}
 
-    $string =~ tr/+/ /;
-    $string =~ s/%([\da-fA-F]{2})/chr (hex ($1))/eg;
+	$string =~ tr/+/ /;
+	$string =~ s/%([\da-fA-F]{2})/chr (hex ($1))/eg;
 
-    return $string;
+	return $string;
 }
 
 sub is_dangerous
 {
-    my ($self, $string) = @_;
+	my ($self, $string) = @_;
 
 	unless (ref ($self) eq 'CGI::Lite') {
 		my @rep = caller;
-		warn "Non-method use of is_dangerous is deprecated " .
-			"in $rep[0] at line $rep[2] of $rep[1]\n";
+		warn "Non-method use of is_dangerous is deprecated "
+		  . "in $rep[0] at line $rep[2] of $rep[1]\n";
 		$string = $self;
 	}
 
-    if ($string =~ /[;<>\*\|`&\$!#\(\)\[\]\{\}:'"]/) {
-        return (1);
-    } else {
-        return (0);
-    }
+	if ($string =~ /[;<>\*\|`&\$!#\(\)\[\]\{\}:'"]/) {
+		return (1);
+	} else {
+		return (0);
+	}
 }
 
 ##++
@@ -1014,26 +1009,26 @@ sub is_dangerous
 
 sub _error
 {
-    my ($self, $message) = @_;
+	my ($self, $message) = @_;
 
-    $self->{error_status}  = 1;
-    $self->{error_message} = $message;
+	$self->{error_status}  = 1;
+	$self->{error_message} = $message;
 }
 
 sub _determine_package
 {
-    my $self = shift;
-    my ($frame, $this_package, $find_package);
+	my $self = shift;
+	my ($frame, $this_package, $find_package);
 
-    $frame = -1;
-    ($this_package) = split (/=/, $self);
+	$frame = -1;
+	($this_package) = split (/=/, $self);
 
-    do {
-	$find_package = caller (++$frame);
-    } until ($find_package !~ /^$this_package/);
+	do {
+		$find_package = caller (++$frame);
+	} until ($find_package !~ /^$this_package/);
 
-    return ($find_package);
-}   
+	return ($find_package);
+}
 
 ##++
 ##  Decode URL encoded data
@@ -1041,49 +1036,54 @@ sub _determine_package
 
 sub _decode_url_encoded_data
 {
-    my ($self, $reference_data, $type) = @_;
-    return unless ($$reference_data);
+	my ($self, $reference_data, $type) = @_;
+	return unless ($$reference_data);
 
-    my (@key_value_pairs, $delimiter);
+	my (@key_value_pairs, $delimiter);
 
-    @key_value_pairs = ();
+	@key_value_pairs = ();
 
-    if ($type eq 'cookies') {
+	if ($type eq 'cookies') {
 		$delimiter = qr/[;,]\s*/;
-    } else {
+	} else {
+
 		# Only other option is form data
 		$delimiter = qr/[;&]/;
-    }
+	}
 
-    @key_value_pairs = split ($delimiter, $$reference_data);
-		
-    foreach my $key_value (@key_value_pairs) {
+	@key_value_pairs = split ($delimiter, $$reference_data);
+
+	foreach my $key_value (@key_value_pairs) {
 		my ($key, $value) = split (/=/, $key_value, 2);
 
-		$value = '' unless defined $value;	# avoid 'undef' warnings for "key=" BDL Jan/99
-		next unless defined $key;  # avoid 'undef' warnings for bogus URLs like 'foobar.cgi?&foo=bar'  
-	
+		# avoid 'undef' warnings for "key=" BDL Jan/99
+		$value = '' unless defined $value;
+
+		# avoid 'undef' warnings for bogus URLs like 'foobar.cgi?&foo=bar'
+		next unless defined $key;
+
 		if ($type eq 'cookies') {
+
 			# Strip leading/trailling whitespace as per RFC 2965
 			$key   =~ s/^\s+|\s+$//g;
 			$value =~ s/^\s+|\s+$//g;
 		}
 
-		$key   = $self->url_decode($key);
-		$value = $self->url_decode($value);
-	
-		if ( defined ($self->{web_data}->{$key}) ) {
-			$self->{web_data}->{$key} = [$self->{web_data}->{$key}] 
-				unless ( ref $self->{web_data}->{$key} );
+		$key   = $self->url_decode ($key);
+		$value = $self->url_decode ($value);
 
-			push (@{ $self->{web_data}->{$key} }, $value);
+		if (defined ($self->{web_data}->{$key})) {
+			$self->{web_data}->{$key} = [$self->{web_data}->{$key}]
+			  unless (ref $self->{web_data}->{$key});
+
+			push (@{$self->{web_data}->{$key}}, $value);
 		} else {
 			$self->{web_data}->{$key} = $value;
-			push (@{ $self->{ordered_keys} }, $key);
+			push (@{$self->{ordered_keys}}, $key);
 		}
-    }
+	}
 
-    return;
+	return;
 }
 
 ##++
@@ -1092,159 +1092,165 @@ sub _decode_url_encoded_data
 
 sub _parse_multipart_data
 {
-    my ($self, $total_bytes, $boundary) = @_;
-    my $files    = {};
-	$boundary    = quotemeta ($boundary); 
+	my ($self, $total_bytes, $boundary) = @_;
+	my $files = {};
+	$boundary = quotemeta ($boundary);
 
-    eval {
+	eval {
 
-    my ($seen, $buffer_size, $byte_count, $platform, $eol, $handle, 
-	$directory, $bytes_left, $new_data, $old_data, $this_boundary,
-	$current_buffer, $changed, $store, $disposition, $headers, 
-        $mime_type, $convert, $field, $file, $new_name, $full_path);
+		my ($seen,      $buffer_size, $byte_count,    $platform,
+			$eol,       $handle,      $directory,     $bytes_left,
+			$new_data,  $old_data,    $this_boundary, $current_buffer,
+			$changed,   $store,       $disposition,   $headers,
+			$mime_type, $convert,     $field,         $file,
+			$new_name,  $full_path
+		);
 
-    $seen        = {};
-    $buffer_size = $self->{buffer_size};
-    $byte_count  = 0;
-    $platform    = $self->{platform};
-    $eol         = $self->{eol}->{$platform};
-    $directory   = $self->{multipart_dir};
+		$seen        = {};
+		$buffer_size = $self->{buffer_size};
+		$byte_count  = 0;
+		$platform    = $self->{platform};
+		$eol         = $self->{eol}->{$platform};
+		$directory   = $self->{multipart_dir};
 
-    while (1) {
-	if ( ($byte_count < $total_bytes) &&
-	     (length ($current_buffer || '') < ($buffer_size * 2)) ) {
+		while (1) {
+			if (   ($byte_count < $total_bytes)
+				&& (length ($current_buffer || '') < ($buffer_size * 2))) {
 
-	    $bytes_left  = $total_bytes - $byte_count;
-	    $buffer_size = $bytes_left if ($bytes_left < $buffer_size);
+				$bytes_left = $total_bytes - $byte_count;
+				$buffer_size = $bytes_left if ($bytes_left < $buffer_size);
 
-	    read (STDIN, $new_data, $buffer_size);
-            $self->_error ("Oh, Oh! I'm upset! Can't read what I want.")
-		if (length ($new_data) != $buffer_size);
+				read (STDIN, $new_data, $buffer_size);
+				$self->_error ("Oh, Oh! I'm upset! Can't read what I want.")
+				  if (length ($new_data) != $buffer_size);
 
-	    $byte_count += $buffer_size;
+				$byte_count += $buffer_size;
 
-	    if ($old_data) {
-		$current_buffer = join ('', $old_data, $new_data);
-	    } else {
-		$current_buffer = $new_data;
-	    }
+				if ($old_data) {
+					$current_buffer = join ('', $old_data, $new_data);
+				} else {
+					$current_buffer = $new_data;
+				}
 
-	} elsif ($old_data) {
-	    $current_buffer = $old_data;
-	    $old_data = undef;
+			} elsif ($old_data) {
+				$current_buffer = $old_data;
+				$old_data       = undef;
 
-	} else {
-	    last;
-	}
-
-	$changed = 0;
-
-	##++
-	##  When Netscape Navigator creates a random boundary string, you
-	##  would expect it to pass that _same_ value in the environment
-	##  variable CONTENT_TYPE, but it does not! Instead, it passes a
-	##  value that has the first two characters ("--") missing.
-	##--
-
-	if ($current_buffer =~ 
-            /(.*?)((?:\015?\012)?-*$boundary-*[\015\012]*)(?=(.*))/os) {
-
-	    ($store, $this_boundary, $old_data) = ($1, $2, $3);
-
-            if ($current_buffer =~ 
-             /[Cc]ontent-[Dd]isposition: ([^\015\012]+)\015?\012  # Disposition
-              (?:([A-Za-z].*?)(?:\015?\012))?                     # Headers
-              (?:\015?\012)                                       # End
-              (?=(.*))                                            # Other Data
-             /xs) {
-
-		($disposition, $headers, $current_buffer) = ($1, $2, $3);
-		$old_data = $current_buffer;
-
-		($mime_type) = $headers =~ /[Cc]ontent-[Tt]ype: (\S+)/;
-
-		$self->_store ($platform, $file, $convert, $handle, $eol, 
-			       $field, \$store, $seen);
-
-		close ($handle) if (ref ($handle) and fileno ($handle));
-
-		if ($mime_type && $self->{convert}->{$mime_type}) {
-		    $convert = 1;
-		} else {
-		    $convert = 0;
-		}
-
-		$changed = 1;
-
-		($field) = $disposition =~ /name="([^"]+)"/;
-		++$seen->{$field};
-
-		$self->{'mime_types'}->{$field} = $mime_type;
-
-                if ($seen->{$field} > 1) {
-                    $self->{web_data}->{$field} = [$self->{web_data}->{$field}]
-                        unless (ref $self->{web_data}->{$field});
-                } else {
-                    push (@{ $self->{ordered_keys} }, $field);
-                }
-
-                if (($file) = $disposition =~ /filename="(.*)"/) {
-                    $file =~ s|.*[:/\\](.*)|$1|;
-
-                    $new_name = $self->_get_file_name ($platform,
-                                                       $directory, $file);
-
-                    $self->{web_data}->{$field} = $new_name;
-
-                    $full_path = join ($self->{file}->{$platform}, 
-                                       $directory, $new_name);
-
-                    open ($handle, '>', $full_path) 
-	                || $self->_error ("Can't create file: $full_path!");
-
-                    $files->{$new_name} = $full_path;
-                } 
-            } elsif ($byte_count < $total_bytes) {
-				$old_data = $this_boundary . $old_data;
+			} else {
+				last;
 			}
 
-	} elsif ($old_data) {
-            $store    = $old_data;
-            $old_data = $new_data;
+			$changed = 0;
 
-	} else {
-	    $store          = $current_buffer;
-            $current_buffer = $new_data;
-        }
+			##++
+			##  When Netscape Navigator creates a random boundary string, you
+			##  would expect it to pass that _same_ value in the environment
+			##  variable CONTENT_TYPE, but it does not! Instead, it passes a
+			##  value that has the first two characters ("--") missing.
+			##--
 
-        unless ($changed) {
-           $self->_store ($platform, $file, $convert, $handle, $eol, 
-                          $field, \$store, $seen);
-        }
-    }
+			if ($current_buffer =~
+				/(.*?)((?:\015?\012)?-*$boundary-*[\015\012]*)(?=(.*))/os) {
 
-    close ($handle) if ($handle and fileno ($handle));
+				($store, $this_boundary, $old_data) = ($1, $2, $3);
 
-	}; # End of eval
+				if ($current_buffer =~
+					/[Cc]ontent-[Dd]isposition: ([^\015\012]+)\015?\012  # Disposition
+					(?:([A-Za-z].*?)(?:\015?\012))?                     # Headers
+					(?:\015?\012)                                       # End
+					(?=(.*))                                            # Other Data
+					/xs
+				  ) {
 
-    $self->_error ($@) if $@;
+					($disposition, $headers, $current_buffer) = ($1, $2, $3);
+					$old_data = $current_buffer;
 
-    $self->_create_handles ($files) if ($self->{file_type} eq 'handle');
+					($mime_type) = $headers =~ /[Cc]ontent-[Tt]ype: (\S+)/;
+
+					$self->_store ($platform, $file, $convert, $handle, $eol,
+						$field, \$store, $seen);
+
+					close ($handle) if (ref ($handle) and fileno ($handle));
+
+					if ($mime_type && $self->{convert}->{$mime_type}) {
+						$convert = 1;
+					} else {
+						$convert = 0;
+					}
+
+					$changed = 1;
+
+					($field) = $disposition =~ /name="([^"]+)"/;
+					++$seen->{$field};
+
+					$self->{'mime_types'}->{$field} = $mime_type;
+
+					if ($seen->{$field} > 1) {
+						$self->{web_data}->{$field} =
+						  [$self->{web_data}->{$field}]
+						  unless (ref $self->{web_data}->{$field});
+					} else {
+						push (@{$self->{ordered_keys}}, $field);
+					}
+
+					if (($file) = $disposition =~ /filename="(.*)"/) {
+						$file =~ s|.*[:/\\](.*)|$1|;
+
+						$new_name =
+						  $self->_get_file_name ($platform, $directory, $file);
+
+						$self->{web_data}->{$field} = $new_name;
+
+						$full_path =
+						  join ($self->{file}->{$platform}, $directory,
+							$new_name);
+
+						open ($handle, '>', $full_path)
+						  || $self->_error ("Can't create file: $full_path!");
+
+						$files->{$new_name} = $full_path;
+					}
+				} elsif ($byte_count < $total_bytes) {
+					$old_data = $this_boundary . $old_data;
+				}
+
+			} elsif ($old_data) {
+				$store    = $old_data;
+				$old_data = $new_data;
+
+			} else {
+				$store          = $current_buffer;
+				$current_buffer = $new_data;
+			}
+
+			unless ($changed) {
+				$self->_store ($platform, $file, $convert, $handle, $eol,
+					$field, \$store, $seen);
+			}
+		}
+
+		close ($handle) if ($handle and fileno ($handle));
+
+	};    # End of eval
+
+	$self->_error ($@) if $@;
+
+	$self->_create_handles ($files) if ($self->{file_type} eq 'handle');
 }
 
 sub _store
 {
-    my ($self, $platform, $file, $convert, $handle, $eol, $field, 
-	$info, $seen) = @_;
+	my ($self, $platform, $file, $convert, $handle, $eol, $field, $info, $seen)
+	  = @_;
 
-    if ($file) {
+	if ($file) {
 		if ($convert) {
 			if ($platform eq 'PC') {
 				$$info =~ s/\015(?=[^\012])|(?<=[^\015])\012/$eol/og;
 			} else {
-	    		$$info =~ s/\015\012/$eol/og;
-				$$info =~ s/\015/$eol/og      if ($platform ne 'Mac');
-				$$info =~ s/\012/$eol/og      if ($platform ne 'Unix');
+				$$info =~ s/\015\012/$eol/og;
+				$$info =~ s/\015/$eol/og if ($platform ne 'Mac');
+				$$info =~ s/\012/$eol/og if ($platform ne 'Unix');
 			}
 		}
 
@@ -1253,7 +1259,7 @@ sub _store
 
 	} elsif ($field) {
 		if ($seen->{$field} > 1) {
-			$self->{web_data}->{$field}->[$seen->{$field}-1] .= $$info;
+			$self->{web_data}->{$field}->[$seen->{$field} - 1] .= $$info;
 		} else {
 			$self->{web_data}->{$field} .= $$info;
 		}
@@ -1262,51 +1268,51 @@ sub _store
 
 sub _get_file_name
 {
-    my ($self, $platform, $directory, $file) = @_;
-    my ($filtered_name, $filename, $timestamp, $path);
+	my ($self, $platform, $directory, $file) = @_;
+	my ($filtered_name, $filename, $timestamp, $path);
 
-    $filtered_name = &{ $self->{filter} }($file)
-        if (ref ($self->{filter}) eq 'CODE');
+	$filtered_name = &{$self->{filter}}($file)
+	  if (ref ($self->{filter}) eq 'CODE');
 
-    $filename  = $filtered_name || $file;
-    $timestamp = time . '__' . $filename;
+	$filename = $filtered_name || $file;
+	$timestamp = time . '__' . $filename;
 
-    if (!$self->{timestamp}) {
-	return $filename;
+	if (!$self->{timestamp}) {
+		return $filename;
 
-    } elsif ($self->{timestamp} == 1) {
-	return $timestamp;
-	
-    } else { # $self->{timestamp} must be 2
-	$path = join ($self->{file}->{$platform}, $directory, $filename);
-	
-	return (-e $path) ? $timestamp : $filename;
-    }
+	} elsif ($self->{timestamp} == 1) {
+		return $timestamp;
+
+	} else {    # $self->{timestamp} must be 2
+		$path = join ($self->{file}->{$platform}, $directory, $filename);
+
+		return (-e $path) ? $timestamp : $filename;
+	}
 }
 
 sub _create_handles
 {
-    my ($self, $files) = @_;
-    my ($package, $handle, $name, $path);
+	my ($self, $files) = @_;
+	my ($package, $handle, $name, $path);
 
-    $package = $self->_determine_package;
+	$package = $self->_determine_package;
 
 	while (($name, $path) = each %$files) {
 		$handle = Symbol::qualify_to_ref ($name, $package);
 		open ($handle, '<', $path)
-			or $self->_error ("Can't read file: $path! $!");
+		  or $self->_error ("Can't read file: $path! $!");
 
-		push (@{ $self->{all_handles} }, $handle);
+		push (@{$self->{all_handles}}, $handle);
 	}
 }
 
 sub close_all_files
 {
-    my $self = shift;
+	my $self = shift;
 
-    foreach my $handle (@{ $self->{all_handles} }) {
-	close $handle;
-    }
+	foreach my $handle (@{$self->{all_handles}}) {
+		close $handle;
+	}
 }
 
 1;
