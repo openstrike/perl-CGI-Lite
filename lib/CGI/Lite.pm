@@ -466,6 +466,9 @@ will be bug fixes only. The new 3.x branch will be the main release and
 will require a more modern perl (5.6.0 is now the bare minimum). The
 3.x branch has new features and has removed some of the legacy code
 including some methods which had been deprecated for more than a decade.
+The attention of users wishing to upgrade from 2.x to 3.x is drawn to
+the L</Deprecated methods> and L</Obsolete methods/subroutines> sections of this
+document.
 
 Requests for new features in the 3.x branch should be made via
 the request tracker at L<https://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lite>
@@ -548,7 +551,7 @@ use warnings;
 
 require 5.6.0;
 
-use Symbol; # For _create_handles
+use Symbol; # For _create_handles and create_variables
 
 ##++
 ## Global Variables

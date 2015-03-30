@@ -1,7 +1,7 @@
 use ExtUtils::MakeMaker;
 use strict;
 use warnings;
-require 5.002;
+require 5.6.0;
 
 
 my %MF = (

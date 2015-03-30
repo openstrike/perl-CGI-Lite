@@ -15,6 +15,7 @@ Implement a limiter on data uploads. One or more of:
     3. A limit on the entire data uploaded, set to some large value by
     default (maybe 10MB?). This is analogous to what CGI.pm does.
 
+Run it all through perltidy.
 
 Write tests for:
 	EOL processing for the different mime types
