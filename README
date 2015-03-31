@@ -1,14 +1,19 @@
-CGI::Lite v2.04_05
+CGI::Lite v2.99_01
 ----------------
 
-Released: 11th Oct 2014
+Released: 31st Mar 2015
+
+This is a developer release. It is the first pre-release leading to the
+new 3.0 branch. Please be aware of the API changes and report any bug
+no matter how small or insignificant. Your assistance is greatly
+appreciated.
 
 
 DESCRIPTION
 -----------
 
-This module can be used to decode form data, query strings, file uploads
-and cookies in a very simple manner.
+This module can be used to decode CGI form data, query strings, file
+uploads and cookies in a very simple manner.
 
 It has no dependencies and is therefore relatively fast to instantiate.
 This makes it well suited to a non-persistent CGI scenario.
@@ -17,7 +22,18 @@ This makes it well suited to a non-persistent CGI scenario.
 NEW IN THIS VERSION
 -------------------
 
-binmode forced on all file writes to avoid corruption when converting
-EOLs on MSWin32.
+Source amended to pass perlcritic. String evals removed or replaced.
+Strictures added to module and examples. All filehandles are now
+lexicals. Consistent source formatting applied to module (perltidy).
+
+deny_uploads and set_size_limit added.
+
+All active public subroutines are now methods.
+
+print_cookie_data and print_form_data have been removed. They had been
+deprecated for well over a decade.
+
+escape_dangerous_chars has been removed. It has been considered a
+security risk since version 2.0.
 
 See the CHANGES file for full history.

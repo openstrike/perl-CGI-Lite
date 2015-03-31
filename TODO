@@ -1,54 +1,7 @@
 Tasks to perform:
 
-Create a legacy branch which will be 2.x and maintain backwards
-compatibility.
-Start a 3.x branch (trunk, really) which will be a code clean-up and
-removal of deprecated features. It will require at least 5.6.0 (for
-lexical filehandles)
-Consider adding a routine to set cookies.
+Consider adding a routine to set cookies and possibly other common
+headers. Perhaps put such optional extras into a separate module.
 Decide whether to tighten validation of cookie names.
 Decide on the appropriate action to take when presented with multiple
 cookies with the same name and document it.
-Implement a limiter on data uploads. One or more of:
-    1. A boolean flag to allow file uploads, set to on by default.
-    2. A per-file size limit, set to unlimited by default.
-    3. A limit on the entire data uploaded, set to some large value by
-    default (maybe 10MB?). This is analogous to what CGI.pm does.
-
-Run it all through perltidy.
-
-Write tests for:
-	EOL processing for the different mime types
-	Fix the upload bug (RT 99294)
-	create_variables (no, just deprecate this one)
-
-Pete
-
-Below is Smyler's todo list from 2003.
-
-================================================================================
-
-The list at the bottom is what I found in this TODO file when I took over this
-module in 2003 August, presumably dating from 2000 or earlier.  I haven't yet
-decided whether I will actually do any of these things.
-
-Before making any changes to the functionality of CGI::Lite, I want to get the
-distribution into better shape.  This include clarifying the licence and
-creating some tests.  I'm also thinking updating it to use Module::Build for
-creating the distribution.
-
-Any changes I make will have tickets opened for them in CPAN Request Tracker,
-where comments can be made:
-
-  http://rt.cpan.org/NoAuth/Bugs.html?Dist=CGI-Lite
-
-And of course all users are welcome to submit feature requests and bug reports
-through this interface.
-
-Smylers
-
-* Saving and re-loading form data
-* Convenient way to output HTTP headers (including cookies)
-* Creating HTML tables from arrays
-* Support for ISINDEX. Does anyone still use this?
-

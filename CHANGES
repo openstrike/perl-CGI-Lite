@@ -1,4 +1,12 @@
-* v2.99_01
+* v2.99_01 (pre-release for 3.0) - 31st March 2015
+
+Source amended to pass perlcritic. String evals removed or replaced.
+Strictures added to module and examples. All filehandles are now
+lexicals. Consistent source formatting applied to module (perltidy).
+
+deny_uploads and set_size_limit added.
+
+All active public subroutines are now methods.
 
 print_cookie_data and print_form_data have been removed. They had been
 deprecated for well over a decade.

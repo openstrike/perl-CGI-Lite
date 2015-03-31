@@ -95,7 +95,7 @@ ok ($#mimetypes > 0, 'get_mime_types returns array');
 is_deeply (\@mimetypes, [ 'text/html', 'text/plain' ],
 	'default mime types');
 
-is ($cgi->add_mime_type (), undef, 'Undefined mime type');
+is ($cgi->add_mime_type (), 0, 'Undefined mime type');
 
 $cgi->add_mime_type ('application/json');
 @mimetypes = $cgi->get_mime_types ();
