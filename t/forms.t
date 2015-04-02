@@ -71,7 +71,7 @@ $form = $cgi->parse_new_form_data;
 is ($cgi->is_error, 0, 'GET with missing kv pair');
 is ($form->{foo}, 'bar', 'Value after GET with missing kv pair');
 
-$ENV{REQUEST_METHOD} = undef;
+delete $ENV{REQUEST_METHOD};
 {
 	@ARGV = ("t/post_stdin.txt");
 	$form = $cgi->parse_new_form_data;
