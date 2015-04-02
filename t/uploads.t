@@ -76,9 +76,14 @@ mkdir $testdir, 0400;
 SKIP: {
 	skip "subdir '$testdir' could not be created", 3 unless (-d $testdir);
 
-	is ($cgi->set_directory ($testdir), 0, 'Set directory (unwriteable)');
-	chmod 0200, $testdir;
-	is ($cgi->set_directory ($testdir), 0, 'Set directory (unreadable)');
+	# See http://www.perlmonks.org/?node_id=587550 for a discussion of
+	# the futility of chmod and friends on MSWin32 systems.
+	SKIP: {
+		skip "Not available on MSWin32", 2 if ($^O eq 'MSWin32');
+		is ($cgi->set_directory ($testdir), 0, 'Set directory (unwriteable)');
+		chmod 0200, $testdir;
+		is ($cgi->set_directory ($testdir), 0, 'Set directory (unreadable)');
+	}
 	rmdir $testdir and open my $td, '>', $testdir;
 	print $td "Test\n";
 	close $td;

@@ -11,8 +11,3 @@ Test suite improvements:
 Ensure test suite runs silently on
 MSWin32: re test 'No request method specified, hash returned'
 gives: Can't do inplace edit: / is not a regular file
-
-Fix test failure: unreadable/unwriteable set_directory tests. See eg:
-http://www.cpantesters.org/cpan/report/af7060d8-6bf6-1014-b7cd-81111fb0de68
-Perhaps it may be because MSWin32 does not have concept of read/write
-perms on directories?
