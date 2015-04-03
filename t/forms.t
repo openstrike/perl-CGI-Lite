@@ -76,7 +76,9 @@ delete $ENV{REQUEST_METHOD};
 	@ARGV = ("t/post_stdin.txt");
 	$form = $cgi->parse_new_form_data;
 	is ($cgi->is_error, 0, 'No request method specified');
-	@ARGV = ("/");
+	# Only try a dir if not windows eg:
+	# http://www.cpantesters.org/cpan/report/26444196-6bfa-1014-8bfa-d971bd707852
+	@ARGV = ("/") unless $^O eq 'MSWin32';
 	my %form = $cgi->parse_new_form_data;
 	is ($cgi->is_error, 0, 'No request method specified, hash returned');
 }
