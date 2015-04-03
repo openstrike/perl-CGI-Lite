@@ -16,7 +16,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11271;
+use Test::More tests => 11274;
 
 use lib './lib';
 
@@ -57,10 +57,20 @@ like ($form->{'100;100_gif'}, qr/[0-9]+__100;100\.gif/,
 like ($form->{'300x300_gif'}, qr/[0-9]+__300x300\.gif/,
 	'Fourth file from hash');
 
-# XXX Duplicate field names for files do NOT work currently. Fix this
-# and then implement some tests.
+my @files = (0, 0);
+TODO: {
+	local $TODO = "Duplicate field names for files get clobbered";
 
-my @files = qw/does_not_exist_gif 100;100_gif 300x300_gif/;
+	is (ref $form->{'hello_world'}, 'ARRAY',
+		'Duplicate file fieldnames become array') and
+		@files = @{$form}{'hello_world'};
+	like ($files[0], qr/[0-9]+__goodbye_world\.txt/,
+		'First duplicate file has correct name');
+	like ($files[1], qr/[0-9]+__hello_world\.txt/,
+		'Second duplicate file has correct name');
+}
+
+@files = qw/does_not_exist_gif 100;100_gif 300x300_gif/;
 my @sizes = qw/0 896 1656/;
 for my $i (0..2) {
 	my $file = "$uploaddir/$form->{$files[$i]}";
@@ -77,9 +87,9 @@ SKIP: {
 	skip "subdir '$testdir' could not be created", 3 unless (-d $testdir);
 
 	# See http://www.perlmonks.org/?node_id=587550 for a discussion of
-	# the futility of chmod and friends on MSWin32 systems.
+	# the futility of chmod and friends on MS Windows systems.
 	SKIP: {
-		skip "Not available on MSWin32", 2 if ($^O eq 'MSWin32');
+		skip "Not available on $^O", 2 if ($^O eq 'MSWin32' or $^O eq 'cygwin');
 		is ($cgi->set_directory ($testdir), 0, 'Set directory (unwriteable)');
 		chmod 0200, $testdir;
 		is ($cgi->set_directory ($testdir), 0, 'Set directory (unreadable)');
