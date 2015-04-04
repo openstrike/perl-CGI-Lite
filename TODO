@@ -3,11 +3,6 @@ Tasks to perform:
 Consider adding a routine to set cookies and possibly other common
 headers. Perhaps put such optional extras into a separate module.
 Decide whether to tighten validation of cookie names.
-Decide on the appropriate action to take when presented with multiple
-cookies with the same name and document it.
 
-Test suite improvements:
-
-Ensure test suite runs silently on
-MSWin32: re test 'No request method specified, hash returned'
-gives: Can't do inplace edit: / is not a regular file
+Ensure that uploaded files with duplicate field names are treated in the
+same ways as other data with duplicate field names.

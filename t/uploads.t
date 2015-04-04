@@ -16,7 +16,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11274;
+use Test::More tests => 11275;
 
 use lib './lib';
 
@@ -116,6 +116,7 @@ $cgi->add_mime_type ('application/json');
 @mimetypes = $cgi->get_mime_types ();
 is ($#mimetypes, 2, 'added a mime type');
 is ($mimetypes[0], 'application/json', 'added mime type is correct');
+is ($cgi->add_mime_type ('application/json'), 0, 'added mime type again');
 
 is ($cgi->remove_mime_type ('foo/bar'), 0,
 	'removed non-existant mime type');

@@ -1,3 +1,11 @@
+* v2.99_02 (pre-release for 3.0) - 4th April 2015
+
+Added force_unique_cookies method and equivalent parsing code and tests.
+
+Improved test suite: better coverage, skipped failling tests for
+Microsoft systems which don't use/honour normal permissions, silenced
+noisy tests on older perls.
+
 * v2.99_01 (pre-release for 3.0) - 31st March 2015
 
 Source amended to pass perlcritic. String evals removed or replaced.
@@ -72,7 +80,7 @@ Microsoft users.
 
 The documentation has been amended to reflect the change of maintainer.
 
-* v2.03 - May 25, 2014
+* v2.03 - 25th May 2014
 
 Maintainer change: Pete Houston has taken over maintenance from Smylers.
 

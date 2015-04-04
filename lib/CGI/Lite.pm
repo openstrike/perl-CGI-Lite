@@ -1,6 +1,9 @@
 ##++
-##     CGI Lite v2.99_01
-##     Last modified: 28 Oct 2014 (see CHANGES)
+##     CGI Lite v2.99_02
+##
+##     see separate CHANGES file for detailed history
+##
+##     Changes in versions 2.03 and newer copyright (c) 2014-2015 Pete Houston
 ##
 ##     Copyright (c) 1995, 1996, 1997 by Shishir Gundavaram
 ##     All Rights Reserved
@@ -8,8 +11,6 @@
 ##     Permission  to  use,  copy, and distribute is hereby granted,
 ##     providing that the above copyright notice and this permission
 ##     appear in all copies and in supporting documentation.
-##
-##     Changes in versions 2.03 and newer copyright (c) 2014-2015 Pete Houston
 ##--
 
 ###############################################################################
@@ -161,6 +162,34 @@ To prevent any file uploads simply call this method with an argument of
 1. To enable them again, use an argument of zero.
 
 	my $deny_uploads = $cgi->deny_uploads (1);
+
+Returns the new value if provided, otherwise the existing value.
+
+=item B<force_unique_cookies>
+
+It is generally considered a mistake to send an HTTP request with
+multiple cookies of the same name. However, the RFC is somewhat vague
+regarding how servers are expected to handle such an eventuality.
+CGI::Lite has always allowed such multiple values and returned them as
+an arrayref to be entirely consistent with the same treatment of
+form/query data.
+
+To override the default behaviour this method may be called with a
+single integer argument before the call to B<parse_cookies>. An argument
+of 1 means that the first cookie value will be used and the others
+discarded. An argument of 2 means that the last cookie value will be
+used and the others discarded. An argument of 3 means that an arrayref
+will be returned as usual but an error raised to indicate the situation.
+An argument of 0 (or any other value) sets it back to the default.
+
+	$cgi->force_unique_cookies (1);
+	$cgi->parse_cookies;
+
+Note that if there is already an item of data in the CGI::Lite object
+which matches the name of a cookie then the subsequent B<parse_cookies>
+call will treat the new cookie value as another data item and the resulting
+behaviour will be affected by this method. This is another reason to
+call B<parse_cookies> before B<parse_form_data>.
 
 Returns the new value if provided, otherwise the existing value.
 
@@ -562,7 +591,7 @@ BEGIN {
 	our @EXPORT = qw/browser_escape url_encode url_decode is_dangerous/;
 }
 
-our $VERSION = '2.99_01';
+our $VERSION = '2.99_02';
 
 ##++
 ##  Start
@@ -587,6 +616,7 @@ sub new
 		file_size_limit => 2097152,    # Unused as yet
 		size_limit      => -1,
 		deny_uploads    => 0,
+		unique_cookies  => 0,
 	};
 
 	$self->{convert} = {
@@ -707,6 +737,20 @@ sub add_timestamp
 	} else {
 		$self->{timestamp} = $value;
 	}
+}
+
+sub force_unique_cookies
+{
+	my ($self, $value) = @_;
+
+	if (defined $value) {
+		if ($value =~ /^[1-3]$/) {
+			$self->{unique_cookies} = $value;
+		} else {
+			$self->{unique_cookies} = 0;
+		}
+	}
+	return $self->{unique_cookies};
 }
 
 sub filter_filename
@@ -1073,6 +1117,16 @@ sub _decode_url_encoded_data
 		$value = $self->url_decode ($value);
 
 		if (defined ($self->{web_data}->{$key})) {
+			if ($type eq 'cookies' and $self->{unique_cookies} > 0) {
+				if ($self->{unique_cookies} == 1) {
+					next;
+				} elsif ($self->{unique_cookies} == 2) {
+					$self->{web_data}->{$key} = $value;
+					next;
+				} else {
+					$self->_error ("Multiple instances of cookie $key");
+				}
+			}
 			$self->{web_data}->{$key} = [$self->{web_data}->{$key}]
 			  unless (ref $self->{web_data}->{$key});
 

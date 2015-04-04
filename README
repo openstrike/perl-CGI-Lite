@@ -1,9 +1,9 @@
-CGI::Lite v2.99_01
-----------------
+CGI::Lite v2.99_02
+------------------
 
-Released: 31st Mar 2015
+Released: 4th Apr 2015
 
-This is a developer release. It is the first pre-release leading to the
+This is a developer release. It is the second pre-release leading to the
 new 3.0 branch. Please be aware of the API changes and report any bug
 no matter how small or insignificant. Your assistance is greatly
 appreciated.
@@ -22,18 +22,10 @@ This makes it well suited to a non-persistent CGI scenario.
 NEW IN THIS VERSION
 -------------------
 
-Source amended to pass perlcritic. String evals removed or replaced.
-Strictures added to module and examples. All filehandles are now
-lexicals. Consistent source formatting applied to module (perltidy).
+Added force_unique_cookies method and equivalent parsing code and tests.
 
-deny_uploads and set_size_limit added.
-
-All active public subroutines are now methods.
-
-print_cookie_data and print_form_data have been removed. They had been
-deprecated for well over a decade.
-
-escape_dangerous_chars has been removed. It has been considered a
-security risk since version 2.0.
+Improved test suite: better coverage, skipped failling tests for
+Microsoft systems which don't use/honour normal permissions, silenced
+noisy tests on older perls.
 
 See the CHANGES file for full history.

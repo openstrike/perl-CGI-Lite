@@ -19,7 +19,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 249;                      # last test to print
+use Test::More tests => 264;                      # last test to print
 
 use lib './lib';
 
@@ -213,3 +213,32 @@ ok (exists $cookies->{foo}, "First cookie name ($testname)");
 is ($cookies->{foo}->[0], 'bar', "First cookie value ($testname)");
 is ($cookies->{foo}->[1], 'baz', "First cookie value ($testname)");
 is ($cookies->{foo}->[2], 'quux', "First cookie value ($testname)");
+
+
+$cgi                  = CGI::Lite->new ();
+is ($cgi->force_unique_cookies(), 0, "force_unique_cookies undef arg");
+is ($cgi->force_unique_cookies('foo'), 0, "force_unique_cookies string arg");
+is ($cgi->force_unique_cookies(100), 0, "force_unique_cookies arg > 3");
+is ($cgi->force_unique_cookies(1), 1, "force_unique_cookies arg == 1");
+$cookies              = $cgi->parse_cookies;
+$testname             = 'unique, take first';
+is ($cgi->is_error, 0, "Cookie parse ($testname)");
+is (scalar keys %$cookies, 1, "Cookie count ($testname)");
+ok (exists $cookies->{foo}, "Cookie name ($testname)");
+is ($cookies->{foo}, 'bar', "Cookie value ($testname)");
+
+$cgi                  = CGI::Lite->new ();
+is ($cgi->force_unique_cookies(2), 2, "force_unique_cookies arg == 2");
+$cookies              = $cgi->parse_cookies;
+$testname             = 'unique, take last';
+is ($cgi->is_error, 0, "Cookie parse ($testname)");
+is (scalar keys %$cookies, 1, "Cookie count ($testname)");
+ok (exists $cookies->{foo}, "Cookie name ($testname)");
+is ($cookies->{foo}, 'quux', "Cookie value ($testname)");
+
+$cgi                  = CGI::Lite->new ();
+is ($cgi->force_unique_cookies(3), 3, "force_unique_cookies arg == 3");
+$cookies              = $cgi->parse_cookies;
+$testname             = 'unique, raise error';
+is ($cgi->is_error, 1, "Cookie parse ($testname)");
+

@@ -20,7 +20,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 316;
+use Test::More tests => 318;
 
 use lib './lib';
 
@@ -40,7 +40,7 @@ BEGIN {
 
 BEGIN { use_ok ('CGI::Lite') }
 
-is ($CGI::Lite::VERSION, '2.99_01', 'Version test');
+is ($CGI::Lite::VERSION, '2.99_02', 'Version test');
 is (CGI::Lite::Version (), $CGI::Lite::VERSION, 'Version subroutine test');
 
 my $cgi = CGI::Lite->new ();
@@ -79,6 +79,10 @@ for my $platform (qw/mac MacIntosh/) {
 	$cgi->set_platform ($platform);
 	is ($cgi->{platform}, 'Mac', "Set platform ($platform)");
 }
+
+is ($cgi->set_platform(), undef, 'Set platform (undef) returns undef');
+is ($cgi->{platform}, 'Mac', "Set platform (undef) - platform unchanged");
+
 # Unix is default
 $cgi->set_platform ('foo');
 is ($cgi->{platform}, 'Unix', "Set default platform");
