@@ -1,3 +1,8 @@
+* v2.99_03 (pre-release for 3.0) - 5th April 2015
+
+BUG FIX: Additional change to forms.t to prevent MS Windows systems
+    hanging. (issue 103315)
+
 * v2.99_02 (pre-release for 3.0) - 4th April 2015
 
 Added force_unique_cookies method and equivalent parsing code and tests.

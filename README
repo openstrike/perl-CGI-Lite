@@ -1,7 +1,7 @@
-CGI::Lite v2.99_02
+CGI::Lite v2.99_03
 ------------------
 
-Released: 4th Apr 2015
+Released: 5th Apr 2015
 
 This is a developer release. It is the second pre-release leading to the
 new 3.0 branch. Please be aware of the API changes and report any bug
@@ -22,10 +22,7 @@ This makes it well suited to a non-persistent CGI scenario.
 NEW IN THIS VERSION
 -------------------
 
-Added force_unique_cookies method and equivalent parsing code and tests.
-
-Improved test suite: better coverage, skipped failling tests for
-Microsoft systems which don't use/honour normal permissions, silenced
-noisy tests on older perls.
+BUG FIX: Additional change to forms.t to prevent MS Windows systems
+    hanging. (issue 103315)
 
 See the CHANGES file for full history.
