@@ -1,3 +1,8 @@
+* v2.99_04 (pre-release for 3.0)
+
+Uploaded files with duplicate field names are treated in the
+same ways as other data with duplicate field names.
+
 * v2.99_03 (pre-release for 3.0) - 5th April 2015
 
 BUG FIX: Additional change to forms.t to prevent MS Windows systems

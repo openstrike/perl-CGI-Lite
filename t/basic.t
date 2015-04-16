@@ -40,7 +40,7 @@ BEGIN {
 
 BEGIN { use_ok ('CGI::Lite') }
 
-is ($CGI::Lite::VERSION, '2.99_03', 'Version test');
+is ($CGI::Lite::VERSION, '2.99_04', 'Version test');
 is (CGI::Lite::Version (), $CGI::Lite::VERSION, 'Version subroutine test');
 
 my $cgi = CGI::Lite->new ();

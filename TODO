@@ -3,6 +3,3 @@ Tasks to perform:
 Consider adding a routine to set cookies and possibly other common
 headers. Perhaps put such optional extras into a separate module.
 Decide whether to tighten validation of cookie names.
-
-Ensure that uploaded files with duplicate field names are treated in the
-same ways as other data with duplicate field names.

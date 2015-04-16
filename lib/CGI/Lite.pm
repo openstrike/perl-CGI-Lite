@@ -254,8 +254,8 @@ prior to version 3.0.
 
 	my $this_type = $cgi->get_upload_type ($field);
 
-Returns the MIME type as a scalar string or undef if the argument does
-not exist or has no type.
+Returns the MIME type as a scalar string if single valued, an arrayref
+if multi-valued or undef if the argument does not exist or has no type.
 
 =item B<set_file_type>
 
@@ -591,7 +591,7 @@ BEGIN {
 	our @EXPORT = qw/browser_escape url_encode url_decode is_dangerous/;
 }
 
-our $VERSION = '2.99_03';
+our $VERSION = '2.99_04';
 
 ##++
 ##  Start
@@ -1237,7 +1237,14 @@ sub _parse_multipart_data
 					($field) = $disposition =~ /name="([^"]+)"/;
 					++$seen->{$field};
 
-					$self->{'mime_types'}->{$field} = $mime_type;
+					unless ($self->{'mime_types'}->{$field}) {
+						$self->{'mime_types'}->{$field} = $mime_type;
+					} elsif (ref $self->{'mime_types'}->{$field}) {
+						push @{$self->{'mime_types'}->{$field}}, $mime_type;
+					} else {
+						$self->{'mime_types'}->{$field} = 
+							[$self->{'mime_types'}->{$field}, $mime_type];
+					}
 
 					if ($seen->{$field} > 1) {
 						$self->{web_data}->{$field} =
@@ -1253,14 +1260,18 @@ sub _parse_multipart_data
 						$new_name =
 						  $self->_get_file_name ($platform, $directory, $file);
 
-						$self->{web_data}->{$field} = $new_name;
+						if (ref $self->{web_data}->{$field}) {
+							push @{$self->{web_data}->{$field}}, $new_name
+						} else {
+							$self->{web_data}->{$field} = $new_name;
+						}
 
 						$full_path =
 						  join ($self->{file}->{$platform}, $directory,
 							$new_name);
 
 						open ($handle, '>', $full_path)
-						  || $self->_error ("Can't create file: $full_path!");
+						  or $self->_error ("Can't create file: $full_path!");
 
 						$files->{$new_name} = $full_path;
 					}

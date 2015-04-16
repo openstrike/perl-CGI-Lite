@@ -16,7 +16,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11275;
+use Test::More tests => 11278;
 
 use lib './lib';
 
@@ -58,17 +58,18 @@ like ($form->{'300x300_gif'}, qr/[0-9]+__300x300\.gif/,
 	'Fourth file from hash');
 
 my @files = (0, 0);
-TODO: {
-	local $TODO = "Duplicate field names for files get clobbered";
 
-	is (ref $form->{'hello_world'}, 'ARRAY',
-		'Duplicate file fieldnames become array') and
-		@files = @{$form}{'hello_world'};
-	like ($files[0], qr/[0-9]+__goodbye_world\.txt/,
-		'First duplicate file has correct name');
-	like ($files[1], qr/[0-9]+__hello_world\.txt/,
-		'Second duplicate file has correct name');
-}
+is (ref $form->{'hello_world'}, 'ARRAY',
+	'Duplicate file fieldnames become array') and
+	@files = @{$form->{'hello_world'}};
+like ($files[0], qr/[0-9]+__goodbye_world\.txt/,
+	'First duplicate file has correct name');
+like ($files[1], qr/[0-9]+__hello_world\.txt/,
+	'Second duplicate file has correct name');
+my $res = $cgi->get_upload_type ('hello_world');
+ok (defined $res, 'Duplicate fields have upload type set');
+is (ref $res, 'ARRAY', 'Duplicate fields have array ref of upload types');
+is ($res->[0], 'text/plain', 'Duplicate fields have correct upload types');
 
 @files = qw/does_not_exist_gif 100;100_gif 300x300_gif/;
 my @sizes = qw/0 896 1656/;
@@ -81,6 +82,7 @@ for my $i (0..2) {
 
 is ($cgi->set_directory ('/srhslgvsgnlsenhglsgslvngh'), 0,
 	'Set directory (non-existant)');
+
 my $testdir = 'testperms';
 mkdir $testdir, 0400;
 SKIP: {
@@ -90,6 +92,7 @@ SKIP: {
 	# the futility of chmod and friends on MS Windows systems.
 	SKIP: {
 		skip "Not available on $^O", 2 if ($^O eq 'MSWin32' or $^O eq 'cygwin');
+		skip "Running as privileged user: $ENV{USER}", 2 unless $>;
 		is ($cgi->set_directory ($testdir), 0, 'Set directory (unwriteable)');
 		chmod 0200, $testdir;
 		is ($cgi->set_directory ($testdir), 0, 'Set directory (unreadable)');

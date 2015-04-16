@@ -1,7 +1,7 @@
-CGI::Lite v2.99_03
+CGI::Lite v2.99_04
 ------------------
 
-Released: 5th Apr 2015
+Released: no
 
 This is a developer release. It is the second pre-release leading to the
 new 3.0 branch. Please be aware of the API changes and report any bug
@@ -22,7 +22,7 @@ This makes it well suited to a non-persistent CGI scenario.
 NEW IN THIS VERSION
 -------------------
 
-BUG FIX: Additional change to forms.t to prevent MS Windows systems
-    hanging. (issue 103315)
+Uploaded files with duplicate field names are treated in the
+same ways as other data with duplicate field names.
 
 See the CHANGES file for full history.
