@@ -483,7 +483,7 @@ future. Non-method use will trigger a warning.
 
 =head1 VERSIONS
 
-This module has maintained backwards compatibility with versions of
+This module maintained backwards compatibility with versions of
 Perl back to 5.002 for a very long time. Such stability is a welcome
 attribute but it restricts the code by disallowing access to features
 introduced into the language since 1996.
@@ -505,13 +505,13 @@ the request tracker at L<https://rt.cpan.org/Public/Dist/Display.html?Name=CGI-L
 =head1 SEE ALSO
 
 If you're looking for more comprehensive CGI modules, you can either use
-the CGI::* modules or L<CGI.pm|CGI>. Both are maintained by
-L<Dr. Lincoln Stein|http://search.cpan.org/CPAN/authors/id/L/LD/LDS/>
-and can be found at your local CPAN mirror.
+the CGI::* modules or L<CGI.pm|CGI>. 
 
-L<CGI::Lite::Request> uses similar method names to CGI.pm thus allowing
-easy transition between them. It uses this module as a
-dependency.
+L<CGI::Lite::Request> uses some similar method names to CGI.pm thus allowing
+easy transition between the two. It uses CGI::Lite as a dependency.
+
+L<CGI::Simple>, L<CGI::Minimal> and L<CGI::Thin> are alternative
+lightweight CGI implementations.
 
 =head1 REPOSITORY
 
