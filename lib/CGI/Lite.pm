@@ -1,5 +1,5 @@
 ##++
-##     CGI Lite v2.99_03
+##     CGI Lite v2.99_04
 ##
 ##     see separate CHANGES file for detailed history
 ##

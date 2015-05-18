@@ -1,4 +1,4 @@
-* v2.99_04 (pre-release for 3.0)
+* v2.99_04 (pre-release for 3.0) - 18th May 2015
 
 Uploaded files with duplicate field names are treated in the
 same ways as other data with duplicate field names.
