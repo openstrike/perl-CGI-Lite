@@ -1,5 +1,5 @@
 ##++
-##     CGI Lite v2.99_04
+##     CGI Lite v3.00
 ##
 ##     see separate CHANGES file for detailed history
 ##
@@ -591,7 +591,7 @@ BEGIN {
 	our @EXPORT = qw/browser_escape url_encode url_decode is_dangerous/;
 }
 
-our $VERSION = '2.99_04';
+our $VERSION = '3.00';
 
 ##++
 ##  Start
