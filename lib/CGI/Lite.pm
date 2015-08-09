@@ -32,10 +32,10 @@ CGI::Lite - Process and decode WWW forms and cookies
     my $form    = $cgi->parse_new_form_data;
 
     my $status  = $cgi->is_error;
-	if ($status) {
-    	my $message = $cgi->get_error_message;
-		die $message;
-	}
+    if ($status) {
+        my $message = $cgi->get_error_message;
+        die $message;
+    }
 
 =head1 DESCRIPTION
 
@@ -562,7 +562,7 @@ Smylers, Andreas, Ben and Shishir.
  providing that the above copyright notice and this permission
  appear in all copies and in supporting documentation.
 
-     Changes in versions 2.03 onwards are copyright 2014, 2015 by Pete Houston
+ Changes in versions 2.03 onwards are copyright 2014, 2015 by Pete Houston
 
 =head1 LICENCE
 
