@@ -16,9 +16,23 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11278;
+use Test::More tests => 11280;
 
 use lib './lib';
+
+# Test exits and outputs;
+my $have_test_trap;
+our $trap; # Imported
+BEGIN {
+	eval {
+		require Test::Trap;
+		Test::Trap->import (qw/trap $trap :flow
+		:stderr(systemsafe)
+		:stdout(systemsafe)
+		:warn/);
+		$have_test_trap = 1;
+	};
+}
 
 BEGIN { use_ok ('CGI::Lite') }
 
@@ -270,6 +284,18 @@ is ($cgi->is_error, 0, 'Parsing upload data with a large file');
 $ENV{CONTENT_LENGTH} += 500; 
 ($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
 is ($cgi->is_error, 1, 'Parsing upload data with over large content length');
+
+# Use Test::Trap where available to test lack of wanrings
+SKIP: {
+	skip "Test::Trap not available", 2 unless $have_test_trap;
+	$datafile = 't/upload_no_headers.txt';
+	$ENV{CONTENT_LENGTH}  = (stat ($datafile))[7];
+    my @r = trap { ($cgi, $form) = post_data ($datafile, $uploaddir); };
+    is ($trap->stderr, '',
+        'Upload of params with no Content-Type is quiet');
+	is_deeply ($form->{foolots}, [qw/bar baz quux/],
+        'Upload of params with no Content-Type is correct');
+}
 
 # Special case where the file uploads appear not last
 sub post_data {

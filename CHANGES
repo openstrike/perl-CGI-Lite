@@ -1,3 +1,8 @@
+* v3.00_01 - 15th October 2015
+
+BUG FIX: Uploads with enctype "multipart/form-data" and at least one
+    non-file param now process without warnings. (issue 107570)
+
 * v3.00 - 21st May 2015
 
 No changes from v2.99_04.

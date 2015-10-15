@@ -1,5 +1,5 @@
 ##++
-##     CGI Lite v3.00
+##     CGI Lite v3.00_01
 ##
 ##     see separate CHANGES file for detailed history
 ##
@@ -89,12 +89,12 @@ As for parse_form_data, but clears the CGI object state before processing
 the request. This is useful in persistent applications (e.g. FCGI), where
 the CGI object is reused for multiple requests. e.g.
 
-	my $CGI = CGI::Lite->new ();
-	while (FCGI::accept > 0)
-	{
-		my $query = $CGI->parse_new_form_data ();
-		# process query
-	}
+    my $CGI = CGI::Lite->new ();
+    while (FCGI::accept > 0)
+    {
+        my $query = $CGI->parse_new_form_data ();
+        # process query
+    }
 
 =item B<parse_cookies>
 
@@ -110,8 +110,8 @@ two distinct hashes (or hashrefs).
 This method is used to check for any potential errors after calling
 either B<parse_form_data> or B<parse_cookies>.
 
-	my $form = $cgi->parse_form_data ();
-	my $went_wrong = $cgi->is_error ();
+    my $form = $cgi->parse_form_data ();
+    my $went_wrong = $cgi->is_error ();
 
 Returns 0 if there is no error, 1 otherwise.
 
@@ -121,7 +121,7 @@ If an error occurs when parsing form/query information or cookies, this
 method may be used to retrieve the error message. Remember, the presence
 of any errors can be checked by calling the B<is_error> method.
 
-	my $msg = $cgi->get_error_message ();
+    my $msg = $cgi->get_error_message ();
 
 Returns the error message as a plain text string.
 
@@ -152,7 +152,7 @@ this method with that size as the sole argument. A size of zero
 effectively disables POST requests. To specify an unlimited size (the
 default) use an argument of -1.
 
-	my $size_limit = $cgi->set_size_limit (10_000_000);
+    my $size_limit = $cgi->set_size_limit (10_000_000);
 
 Returns the new value if provided, otherwise the existing value.
 
@@ -161,7 +161,7 @@ Returns the new value if provided, otherwise the existing value.
 To prevent any file uploads simply call this method with an argument of
 1. To enable them again, use an argument of zero.
 
-	my $deny_uploads = $cgi->deny_uploads (1);
+    my $deny_uploads = $cgi->deny_uploads (1);
 
 Returns the new value if provided, otherwise the existing value.
 
@@ -182,8 +182,8 @@ used and the others discarded. An argument of 3 means that an arrayref
 will be returned as usual but an error raised to indicate the situation.
 An argument of 0 (or any other value) sets it back to the default.
 
-	$cgi->force_unique_cookies (1);
-	$cgi->parse_cookies;
+    $cgi->force_unique_cookies (1);
+    $cgi->parse_cookies;
 
 Note that if there is already an item of data in the CGI::Lite object
 which matches the name of a cookie then the subsequent B<parse_cookies>
@@ -198,9 +198,9 @@ Returns the new value if provided, otherwise the existing value.
 Used to set the directory where the uploaded files will be stored 
 (only applies to the I<multipart/form-data> encoding scheme).
 
-	my $tmpdir = '/some/dir';
-	$cgi->set_directory ($tmpdir) or
-		die "Directory $tmpdir cannot be used.\n";
+    my $tmpdir = '/some/dir';
+    $cgi->set_directory ($tmpdir) or
+        die "Directory $tmpdir cannot be used.\n";
 
 This function should be called I<before> B<parse_form_data>, 
 or else the directory defaults to "/tmp". If the application cannot 
@@ -210,7 +210,7 @@ Returns 0 on error, 1 otherwise.
 
 =item B<close_all_files>
 
-	$cgi->close_all_files;
+    $cgi->close_all_files;
 
 All uploaded files that are opened as a result of calling B<set_file_type>
 with the "handle" argument can be closed in one shot by calling this
@@ -244,7 +244,7 @@ Returns 1 if this mime type is newly deleted, 0 otherwise.
 Returns the list of the 
 MIME types for which EOL translation is performed.
 
-	my @mimelist = $cgi->get_mime_types ();
+    my @mimelist = $cgi->get_mime_types ();
 
 =item B<get_upload_type>
 
@@ -252,7 +252,7 @@ Returns the MIME type of uploaded data. Takes the field name as a scalar
 argument. This previously undocumented function was named print_mime_type
 prior to version 3.0.
 
-	my $this_type = $cgi->get_upload_type ($field);
+    my $this_type = $cgi->get_upload_type ($field);
 
 Returns the MIME type as a scalar string if single valued, an arrayref
 if multi-valued or undef if the argument does not exist or has no type.
@@ -264,8 +264,8 @@ the B<parse_form_data> method is called . But if this method is passed the strin
 the I<handles> to the files are returned instead. However, the name
 of each handle still corresponds to the filename.
 
-	# $fh has been set to one of 'handle' or 'file'
-	$cgi->set_file_type ($fh);
+    # $fh has been set to one of 'handle' or 'file'
+    $cgi->set_file_type ($fh);
 
 This function should be called I<before> any call to B<parse_form_data>, or 
 else it will have no effect.
@@ -276,11 +276,11 @@ By default, a timestamp is added to the front of uploaded files.
 However, there is the option of completely turning off timestamp mode
 (value 0), or adding a timestamp only for existing files (value 2).
 
-	$cgi->add_timestamp ($tsflag);	
-	# where $tsflag takes one of these values
-	#       0 = no timestamp
-	#       1 = timestamp all files (default)
-	#       2 = timestamp only if file exists
+    $cgi->add_timestamp ($tsflag);	
+    # where $tsflag takes one of these values
+    #       0 = no timestamp
+    #       1 = timestamp all files (default)
+    #       2 = timestamp only if file exists
 
 =item B<filter_filename>
 
@@ -353,7 +353,7 @@ method exists to convert either a scalar value or an array reference
 into a list thus removing the need for the user to determine whether the
 returned value for any field is a reference or a scalar.
 
-	@all_values = $cgi->get_multiple_values ($reference);
+    @all_values = $cgi->get_multiple_values ($reference);
 
 It is only provided as a convenience to the user and is not used
 internally by the module itself.
@@ -393,7 +393,7 @@ Returns the URL-decoded string.
 
 This method checks for the existence of dangerous meta-characters.
 
-	$status = $cgi->is_dangerous ($string);
+    $status = $cgi->is_dangerous ($string);
 
 Returns 1 if such characters are found, 0 otherwise.
 
@@ -415,8 +415,8 @@ You can use this method to print errors to standard output (ie. as part of
 the HTTP response) and exit. B<This method is deprecated as of version 3.0.>
 The same functionality can be achieved with:
 
-	print ('error 1', 'error 2', 'error 3');
-	exit 1;
+    print ('error 1', 'error 2', 'error 3');
+    exit 1;
 
 =item B<create_variables>
 
@@ -426,7 +426,7 @@ CGI form or cookie handling. It is retained here for backwards
 compatibility but will be removed entirely in later versions.
 
     %form = ('name'   => 'alan wells',
-	     'sport'  => 'track and field',
+         'sport'  => 'track and field',
 	     'events' => '100m');
 
     $cgi->create_variables (\%hash);
@@ -591,7 +591,7 @@ BEGIN {
 	our @EXPORT = qw/browser_escape url_encode url_decode is_dangerous/;
 }
 
-our $VERSION = '3.00';
+our $VERSION = '3.00_01';
 
 ##++
 ##  Start
@@ -1219,6 +1219,7 @@ sub _parse_multipart_data
 					($disposition, $headers, $current_buffer) = ($1, $2, $3);
 					$old_data = $current_buffer;
 
+					$headers ||= '';
 					($mime_type) = $headers =~ /[Cc]ontent-[Tt]ype: (\S+)/;
 
 					$self->_store ($platform, $file, $convert, $handle, $eol,
