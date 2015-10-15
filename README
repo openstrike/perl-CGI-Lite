@@ -3,8 +3,8 @@ CGI::Lite v3.00_01
 
 Released: 15th October 2015
 
-This is a new public release of the 3.x branch. Please be aware of
-the API changes with particular reference to the deprecated and obsolete
+This is a new release of the 3.x branch. Please be aware of the API
+changes with particular reference to the deprecated and obsolete
 subroutines and methods.
 
 
