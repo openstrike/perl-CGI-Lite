@@ -20,6 +20,7 @@ t/mime_upload.txt
 t/post_stdin.txt
 t/post_text.txt
 t/upload_no_files.txt
+t/upload_no_headers.txt
 t/upload_no_trailing_files.txt
 t/uploads.t
 TODO				Future work?

@@ -20,7 +20,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 318;
+use Test::More tests => 322;
 
 use lib './lib';
 
@@ -36,11 +36,10 @@ BEGIN {
 		:warn/);
 		$have_test_trap = 1;
 	};
+	use_ok ('CGI::Lite');
 }
 
-BEGIN { use_ok ('CGI::Lite') }
-
-is ($CGI::Lite::VERSION, '3.00_01', 'Version test');
+is ($CGI::Lite::VERSION, '3.00_02', 'Version test');
 is (CGI::Lite::Version (), $CGI::Lite::VERSION, 'Version subroutine test');
 
 my $cgi = CGI::Lite->new ();
@@ -125,7 +124,7 @@ like ($cgi->_get_file_name ('Unix', '/tmp', ''), qr/^\d+__/,
 # Use Test::Trap where available to test wanrings and terminating
 # functions.
 SKIP: {
-	skip "Test::Trap not available", 6 unless $have_test_trap;
+	skip "Test::Trap not available", 10 unless $have_test_trap;
     my @r = trap { browser_escape ('a') };
     like ($trap->stderr,
         qr/Non-method use of browser_escape is deprecated/,
@@ -145,4 +144,28 @@ SKIP: {
 	@r = trap { $cgi->return_error ('Hello', 'World!') };
 	is ($trap->exit, 1, 'return_error exits');
 	is ($trap->stdout, "Hello World!\n", 'return_error prints');
+
+	# Same, but use child class
+	{
+		package MyChild;
+		use base 'CGI::Lite';
+	}
+	my $child = MyChild->new;
+
+    @r = trap { $child->browser_escape ('a') };
+    unlike ($trap->stderr,
+        qr/Non-method use of browser_escape is deprecated/,
+        'No warning calling browser_escape as child method');
+    @r = trap { $child->url_encode ('a') };
+    unlike ($trap->stderr,
+        qr/Non-method use of url_encode is deprecated/,
+        'No warning calling url_encode as child method');
+    @r = trap { $child->url_decode ('a') };
+    unlike ($trap->stderr,
+        qr/Non-method use of url_decode is deprecated/,
+        'No warning calling url_decode as child method');
+    @r = trap { $child->is_dangerous ('a') };
+    unlike ($trap->stderr,
+        qr/Non-method use of is_dangerous is deprecated/,
+        'No warning calling is_dangerous as child method');
 }

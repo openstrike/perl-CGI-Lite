@@ -1,5 +1,5 @@
 ##++
-##     CGI Lite v3.00_01
+##     CGI Lite v3.00_02
 ##
 ##     see separate CHANGES file for detailed history
 ##
@@ -42,7 +42,7 @@ CGI::Lite - Process and decode WWW forms and cookies
 This module can be used to decode form data, query strings, file uploads
 and cookies in a very simple manner.
 
-It has no dependencies and is therefore relatively fast to
+It has only one dependency and is therefore relatively fast to
 instantiate. This makes it well suited to a non-persistent CGI scenario.
 
 =head1 METHODS
@@ -426,8 +426,8 @@ CGI form or cookie handling. It is retained here for backwards
 compatibility but will be removed entirely in later versions.
 
     %form = ('name'   => 'alan wells',
-         'sport'  => 'track and field',
-	     'events' => '100m');
+             'sport'  => 'track and field',
+             'events' => '100m');
 
     $cgi->create_variables (\%hash);
 
@@ -478,8 +478,8 @@ subroutines rather than methods:
 
 They will still work as such and are still exported
 by default. Users are encouraged to migrate to the new method calls
-instead as both the export and subroutine interface may be retired in
-future. Non-method use will trigger a warning.
+instead as both the export and subroutine interface will be retired in
+future. Non-method use currently triggers a warning.
 
 =head1 VERSIONS
 
@@ -591,7 +591,7 @@ BEGIN {
 	our @EXPORT = qw/browser_escape url_encode url_decode is_dangerous/;
 }
 
-our $VERSION = '3.00_01';
+our $VERSION = '3.00_02';
 
 ##++
 ##  Start
@@ -984,7 +984,7 @@ sub browser_escape
 {
 	my ($self, $string) = @_;
 
-	unless (ref ($self) eq 'CGI::Lite') {
+	unless (eval { $self->isa ('CGI::Lite'); }) {
 		my @rep = caller;
 		warn "Non-method use of browser_escape is deprecated "
 		  . "in $rep[0] at line $rep[2] of $rep[1]\n";
@@ -999,7 +999,7 @@ sub url_encode
 {
 	my ($self, $string) = @_;
 
-	unless (ref ($self) eq 'CGI::Lite') {
+	unless (eval { $self->isa ('CGI::Lite'); }) {
 		my @rep = caller;
 		warn "Non-method use of url_encode is deprecated "
 		  . "in $rep[0] at line $rep[2] of $rep[1]\n";
@@ -1016,7 +1016,7 @@ sub url_decode
 {
 	my ($self, $string) = @_;
 
-	unless (ref ($self) eq 'CGI::Lite') {
+	unless (eval { $self->isa ('CGI::Lite'); }) {
 		my @rep = caller;
 		warn "Non-method use of url_decode is deprecated "
 		  . "in $rep[0] at line $rep[2] of $rep[1]\n";
@@ -1033,7 +1033,7 @@ sub is_dangerous
 {
 	my ($self, $string) = @_;
 
-	unless (ref ($self) eq 'CGI::Lite') {
+	unless (eval { $self->isa ('CGI::Lite'); }) {
 		my @rep = caller;
 		warn "Non-method use of is_dangerous is deprecated "
 		  . "in $rep[0] at line $rep[2] of $rep[1]\n";
