@@ -1,0 +1,11 @@
+language: perl
+perl:
+  - "5.8"
+  - "5.10"
+  - "5.14"
+  - "5.18"
+  - "5.22"
+install:
+  - cpanm --installdeps --notest .
+  - cpanm --notest Test::Vars Test::Trap Test::Kwalitee
+script: "perl Makefile.PL && make && prove t xt/*"
