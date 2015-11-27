@@ -25,3 +25,4 @@ t/upload_no_trailing_files.txt
 t/uploads.t
 TODO				Future work?
 xt/release/kwalitee.t
+xt/release/vars.t

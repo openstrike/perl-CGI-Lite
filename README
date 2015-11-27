@@ -1,7 +1,7 @@
-CGI::Lite v3.00_01
+CGI::Lite v3.00_02
 ------------------
 
-Released: 15th October 2015
+Released: 27th November 2015
 
 This is a new release of the 3.x branch. Please be aware of the API
 changes with particular reference to the deprecated and obsolete
@@ -14,16 +14,17 @@ DESCRIPTION
 This module can be used to decode CGI form data, query strings, file
 uploads and cookies in a very simple manner.
 
-It has no dependencies and is therefore relatively fast to instantiate.
+It has only one dependency and is therefore relatively fast to instantiate.
 This makes it well suited to a non-persistent CGI scenario.
 
 
 NEW IN THIS VERSION
 -------------------
 
-These are the changes since the last release (3.00).
+These are the changes since the last release (3.00_01).
 
-BUG FIX: Uploads with enctype "multipart/form-data" and at least one
-    non-file param now process without warnings. (issue 107570)
+Dual subs/methods have improved detection of how they have been called.
+
+Misc small documentation improvements.
 
 See the CHANGES file for full history.

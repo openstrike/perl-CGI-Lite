@@ -1,3 +1,9 @@
+* v3.00_02 - 27th November 2015
+
+Dual subs/methods have improved detection of how they have been called.
+
+Misc small documentation improvements.
+
 * v3.00_01 - 15th October 2015
 
 BUG FIX: Uploads with enctype "multipart/form-data" and at least one
