@@ -18,6 +18,6 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Vars 0.12;
+use Test::Vars 0.012;
 
 all_vars_ok ();
