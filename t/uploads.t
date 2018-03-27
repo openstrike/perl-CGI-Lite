@@ -16,7 +16,8 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11280;
+use File::Spec;
+use Test::More tests => 11282;
 
 use lib './lib';
 
@@ -284,6 +285,30 @@ is ($cgi->is_error, 0, 'Parsing upload data with a large file');
 $ENV{CONTENT_LENGTH} += 500; 
 ($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
 is ($cgi->is_error, 1, 'Parsing upload data with over large content length');
+
+{
+    $datafile = 't/multipart_split_boundary.txt';
+    my $boundary = q[7212883912499];
+    local $ENV{CONTENT_TYPE}  = qq#multipart/form-data; boundary=$boundary#;
+    $ENV{CONTENT_LENGTH}  = (stat ($datafile))[7];
+    $cgi = CGI::Lite->new;
+    $cgi->set_buffer_size (256);
+    ($cgi, $form) = post_data ($datafile, $uploaddir, $cgi);
+    is ($cgi->is_error, 0, 'Parsing multipart/form-data file with boundary split');
+    my $boundary_check_test_name = 'Where is no boundary in saved file';
+    if (exists $form->{test_file}) {
+        my $test_file = File::Spec->catfile($uploaddir, $form->{test_file});
+        open (my $hdl, '<', $test_file) or die "Cannot opet datafile $test_file"; 
+        my $test_data = do {
+            local $/ = undef;
+            <$hdl>;
+        };
+        unlike($test_data, qr/$boundary/, $boundary_check_test_name);
+    } else {
+        fail($boundary_check_test_name . " (test file does not parsed properly)");
+    }
+}
+
 
 # Use Test::Trap where available to test lack of wanrings
 SKIP: {
