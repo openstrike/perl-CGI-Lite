@@ -1149,8 +1149,9 @@ sub _parse_multipart_data
 {
 	my ($self, $total_bytes, $boundary) = @_;
 	my $files = {};
-	$boundary = quotemeta ($boundary);
-	my $buf_parse_re = qr/(.*?)((?:\015?\012)?-*$boundary-*[\015\012]*)(?=(.*))/s;
+	my $boundary_re = qr/(.*?)((?:\015?\012)?-*
+		\Q$boundary\E
+		-*[\015\012]*)(?=(.*))/xs;
 
 	eval {
 
@@ -1168,15 +1169,13 @@ sub _parse_multipart_data
 		$platform    = $self->{platform};
 		$eol         = $self->{eol}->{$platform};
 		$directory   = $self->{multipart_dir};
+		$bytes_left  = $total_bytes;
 
-		while (1) {
-			if (   ($byte_count < $total_bytes)
-				&& (length ($current_buffer || '') < ($buffer_size * 2))) {
+		while ($bytes_left) {
+			if ($byte_count < $total_bytes) {
 
 				$bytes_left = $total_bytes - $byte_count;
-				if ($bytes_left < $buffer_size or $bytes_left < 2 * $buffer_size) {
-					$buffer_size = $bytes_left;
-				}
+				$buffer_size = $bytes_left if ($bytes_left < $buffer_size);
 
 				read (STDIN, $new_data, $buffer_size);
 				$self->_error ("Oh, Oh! I'm upset! Can't read what I want.")
@@ -1207,7 +1206,7 @@ sub _parse_multipart_data
 			##  value that has the first two characters ("--") missing.
 			##--
 
-			if ($current_buffer =~ $buf_parse_re) {
+			if ($current_buffer =~ $boundary_re) {
 
 				($store, $this_boundary, $old_data) = ($1, $2, $3);
 
@@ -1286,10 +1285,6 @@ sub _parse_multipart_data
 			} elsif ($old_data) {
 				$store    = $old_data;
 				$old_data = $new_data;
-
-			} else {
-				$store          = $current_buffer;
-				$current_buffer = $new_data;
 			}
 
 			unless ($changed) {
