@@ -592,7 +592,7 @@ BEGIN {
 	our @EXPORT = qw/browser_escape url_encode url_decode is_dangerous/;
 }
 
-our $VERSION = '3.01';
+our $VERSION = '3.01_01';
 
 ##++
 ##  Start
