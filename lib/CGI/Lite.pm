@@ -592,7 +592,7 @@ BEGIN {
 	our @EXPORT = qw/browser_escape url_encode url_decode is_dangerous/;
 }
 
-our $VERSION = '3.01_01';
+our $VERSION = '3.01_02';
 
 ##++
 ##  Start
@@ -1310,7 +1310,7 @@ sub _store
 	if ($file) {
 		if ($convert) {
 			if ($platform eq 'PC') {
-				$$info =~ s/\015(?=[^\012])|(?<=[^\015])\012/$eol/og;
+				$$info =~ s/\015(?!\012)|(?<!\015)\012/$eol/og;
 			} else {
 				$$info =~ s/\015\012/$eol/og;
 				$$info =~ s/\015/$eol/og if ($platform ne 'Mac');

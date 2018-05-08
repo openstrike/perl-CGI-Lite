@@ -1,3 +1,8 @@
+* v3.01_02 - 8th May 2018
+
+BUG FIX: Uploads on MSWin32 were not correctly converted if the first
+    character of a buffer was LF. Changed regex to negative lookarounds.
+
 * v3.01_01 - 4th May 2018
 
 BUG FIX: Uploads could fail if n * buffer_size fell inside the boundary

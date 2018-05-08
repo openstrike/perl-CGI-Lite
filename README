@@ -1,7 +1,7 @@
-CGI::Lite v3.01_01
+CGI::Lite v3.01_02
 ------------------
 
-Released: 4th May 2018
+Released: 8th May 2018
 
 This is a new release of the 3.x branch. Please be aware of the API
 changes from 2.x with particular reference to the deprecated and obsolete
@@ -22,6 +22,9 @@ NEW IN THIS VERSION
 -------------------
 
 These are the changes since the last general release (3.01).
+
+BUG FIX: Uploads on MSWin32 were not correctly converted if the first
+    character of a buffer was LF. Changed regex to negative lookarounds.
 
 BUG FIX: Uploads could fail if n * buffer_size fell inside the boundary
     marker. Thanks pru-mike (PR 1). (possibly fixes issue 116670)

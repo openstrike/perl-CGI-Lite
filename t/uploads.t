@@ -351,6 +351,6 @@ sub warn_tail {
 	close $file;
 	my $lastn = substr ($contents, 0 - $n);
 	foreach (split (//, $lastn, $n)) {
-		print $n-- . " chars from the end: " . ord ($_) . "\n";
+		diag ($n-- . " chars from the end: " . ord ($_) . "\n");
 	}
 }
