@@ -1,3 +1,7 @@
+* v3.02 - 19th May 2018
+
+No changes from v3.01_02
+
 * v3.01_02 - 8th May 2018
 
 BUG FIX: Uploads on MSWin32 were not correctly converted if the first

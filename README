@@ -1,7 +1,7 @@
-CGI::Lite v3.01_02
-------------------
+CGI::Lite v3.02
+---------------
 
-Released: 8th May 2018
+Released: 19th May 2018
 
 This is a new release of the 3.x branch. Please be aware of the API
 changes from 2.x with particular reference to the deprecated and obsolete
